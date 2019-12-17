@@ -1,4 +1,4 @@
-package com.example.blankflutterapp;
+package com.example.zentrails;
 
 import android.os.Bundle;
 
