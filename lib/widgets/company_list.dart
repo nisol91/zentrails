@@ -87,18 +87,22 @@ class _CompanyListState extends State<CompanyList> {
       // non sarebbe rimasta in ascolto come fa ora. Cosi si aggiorna senza dover
       //richiamare la funzione periodicamente e si aggiorna solo quando vengono tolti
       //o aggiunti dei dati
-      setState(() {
-        companies = companiesFromFetch;
-      });
+      if (mounted) {
+        setState(() {
+          companies = companiesFromFetch;
+        });
+      }
       print('COMPANIES->${companies}');
       loadedCompanies = true;
     });
   }
 
   void orderAlfa() async {
-    setState(() {
-      loadedCompanies = false;
-    });
+    if (mounted) {
+      setState(() {
+        loadedCompanies = false;
+      });
+    }
     print('sorting alfab...');
     await Firestore.instance
         .collection("companies")
@@ -108,10 +112,11 @@ class _CompanyListState extends State<CompanyList> {
       companiesFromFetch = doc.documents
           .map((doc) => Company.fromMap(doc.data, doc.documentID))
           .toList();
-
-      setState(() {
-        companies = companiesFromFetch;
-      });
+      if (mounted) {
+        setState(() {
+          companies = companiesFromFetch;
+        });
+      }
       print(companies);
       loadedCompanies = true;
     });
@@ -119,9 +124,11 @@ class _CompanyListState extends State<CompanyList> {
 
   void filterSearchResults(value) async {
     if (value != null) {
-      setState(() {
-        loadedCompanies = false;
-      });
+      if (mounted) {
+        setState(() {
+          loadedCompanies = false;
+        });
+      }
       await Firestore.instance
           .collection("companies")
           .getDocuments()
@@ -130,9 +137,11 @@ class _CompanyListState extends State<CompanyList> {
             .map((doc) => Company.fromMap(doc.data, doc.documentID))
             .where((doc) => doc.name.contains(value))
             .toList();
-        setState(() {
-          companies = companiesFromFetch;
-        });
+        if (mounted) {
+          setState(() {
+            companies = companiesFromFetch;
+          });
+        }
         print(companies);
         loadedCompanies = true;
       });
@@ -140,9 +149,11 @@ class _CompanyListState extends State<CompanyList> {
   }
 
   void filterFeatured() async {
-    setState(() {
-      loadedCompanies = false;
-    });
+    if (mounted) {
+      setState(() {
+        loadedCompanies = false;
+      });
+    }
     print('sorting alfab...');
     await Firestore.instance
         .collection("companies")
@@ -152,10 +163,11 @@ class _CompanyListState extends State<CompanyList> {
       companiesFromFetch = doc.documents
           .map((doc) => Company.fromMap(doc.data, doc.documentID))
           .toList();
-
-      setState(() {
-        companies = companiesFromFetch;
-      });
+      if (mounted) {
+        setState(() {
+          companies = companiesFromFetch;
+        });
+      }
       print(companies);
       loadedCompanies = true;
     });
