@@ -319,6 +319,7 @@ class _MyHomePageState extends State<MyHomePage>
                   height: 30,
                 ),
               ),
+
               backgroundColor: tema.primaryColor,
               bottom: new TabBar(controller: controller, tabs: <Tab>[
                 new Tab(
@@ -352,6 +353,19 @@ class _MyHomePageState extends State<MyHomePage>
                     : Container(),
               ],
             ),
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex: 0, // this will be set when a new tab is tapped
+              items: [
+                BottomNavigationBarItem(
+                  icon: new Icon(Icons.home),
+                  title: new Text('Home'),
+                ),
+                BottomNavigationBarItem(
+                  icon: new Icon(Icons.mail),
+                  title: new Text('Messages'),
+                ),
+              ],
+            ),
             body: Container(
               height: MediaQuery.of(context).size.height * 1,
               child: TabBarView(
@@ -365,7 +379,8 @@ class _MyHomePageState extends State<MyHomePage>
                   // new AuthScreen(),
                 ],
               ),
-            ))
+            ),
+          )
         : _loadingView;
   }
 }
