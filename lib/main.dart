@@ -1,3 +1,4 @@
+import 'package:ZenTrails/widgets/service_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import './views/add_company.dart';
 import './views/profile_page.dart';
@@ -25,10 +26,10 @@ void main() {
 
 class MyApp extends StatelessWidget {
   ThemeData get _themeData => new ThemeData(
-        primaryColor: Colors.green[400],
-        secondaryHeaderColor: Colors.green[200],
-        accentColor: Colors.teal[900],
-        dividerColor: Colors.green[600],
+        primaryColor: Colors.blueGrey[400],
+        secondaryHeaderColor: Colors.blueGrey[200],
+        accentColor: Colors.blueGrey[900],
+        dividerColor: Colors.blueGrey[600],
 
         scaffoldBackgroundColor: Colors.white,
         // Define the default font family.
@@ -40,23 +41,23 @@ class MyApp extends StatelessWidget {
         textTheme: TextTheme(
             headline: TextStyle(
               fontSize: 72.0,
-              color: Colors.teal[900],
+              color: Colors.blueGrey[900],
             ),
             title: TextStyle(
               fontSize: 36.0,
-              color: Colors.teal[900],
+              color: Colors.blueGrey[900],
             ),
             body1: TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 16,
               fontStyle: FontStyle.normal,
-              color: Colors.teal[900],
+              color: Colors.blueGrey[900],
             ),
             body2: TextStyle(
               fontWeight: FontWeight.w900,
               fontSize: 22,
               fontStyle: FontStyle.normal,
-              color: Colors.teal[900],
+              color: Colors.blueGrey[900],
             )),
       );
   @override
@@ -99,6 +100,8 @@ class _MyHomePageState extends State<MyHomePage>
   bool areYouAdmin = false;
   List<Company> companies;
   TabController controller;
+  //per il bottom bar nav
+  int _currentIndex = 0;
 
   @override
   initState() {
@@ -194,109 +197,23 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  Widget get _mapView {
-    return Container(
-      child: MapView(),
-    );
+  //====bottom navbar control
+  final List<Widget> _bottomBarTabs = [
+    MapView(),
+    AuthScreen(),
+    CompanyList(),
+    ProfilePage(),
+  ];
+  Widget changeBottomBarTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    print(_currentIndex);
+    print(_bottomBarTabs[_currentIndex]);
+
+    return _bottomBarTabs[_currentIndex];
   }
-
-  Widget get _homeView {
-    final companyProvider = Provider.of<CrudModelCompany>(context);
-    var tema = Theme.of(context);
-
-    return StreamBuilder(
-        stream: companyProvider.fetchCompaniesAsStream(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.hasData) {
-            print('fatto');
-
-            companies = snapshot.data.documents
-                .map((doc) => Company.fromMap(doc.data, doc.documentID))
-                .toList();
-            return Column(
-              children: <Widget>[
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(
-                                      color: tema.dividerColor, width: 3))),
-                          child: SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.25,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: companies.length,
-                              itemBuilder: (buildContext, index) =>
-                                  (companies[index].featured == true)
-                                      ? CompanyCard(
-                                          companyDetails: companies[index],
-                                          featuredColor: tema.primaryColor,
-                                        )
-                                      : Container(),
-                            ),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.5774,
-                          child: Stack(
-                            children: <Widget>[
-                              Container(
-                                decoration: BoxDecoration(
-                                  // Box decoration takes a gradient
-                                  gradient: LinearGradient(
-                                    // Where the linear gradient begins and ends
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    // Add one stop for each color. Stops should increase from 0 to 1
-                                    stops: [0.1, 0.99],
-                                    colors: [
-                                      // Colors are easy thanks to Flutter's Colors class.
-                                      Colors.transparent,
-                                      Theme.of(context).accentColor,
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              ListView.builder(
-                                scrollDirection: Axis.vertical,
-                                itemCount: companies.length,
-                                itemBuilder: (buildContext, index) =>
-                                    CompanyCard(
-                                        companyDetails: companies[index]),
-                              ),
-                            ],
-                          )),
-                    )
-                  ],
-                ),
-              ],
-            );
-          } else {
-            print('loading');
-
-            return Container(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  CircularProgressIndicator(),
-                ],
-              ),
-            );
-          }
-        });
-  }
+  //==========
 
   @override
   void dispose() {
@@ -314,50 +231,10 @@ class _MyHomePageState extends State<MyHomePage>
 
     return (!appState.isLoading)
         ? new Scaffold(
-            appBar: new AppBar(
-              title: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image(
-                  image: AssetImage('assets/echo_logo.png'),
-                  height: 30,
-                ),
-              ),
-
-              backgroundColor: tema.primaryColor,
-              bottom: new TabBar(controller: controller, tabs: <Tab>[
-                new Tab(
-                    icon: new Icon(
-                  Icons.home,
-                  color: tema.accentColor,
-                )),
-                new Tab(icon: new Icon(Icons.list, color: tema.accentColor)),
-                new Tab(
-                    icon: new Icon(Icons.location_on, color: tema.accentColor))
-              ]),
-              // This is how you add new buttons to the top right of a material appBar.
-              // You can add as many as you'd like.
-              actions: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.account_box),
-                  onPressed: _logInPage,
-                  color: tema.accentColor,
-                ),
-                IconButton(
-                  icon: Icon(Icons.settings),
-                  onPressed: _profilePage,
-                  color: tema.accentColor,
-                ),
-                (container.areYouAdmin == true)
-                    ? IconButton(
-                        icon: Icon(Icons.dashboard),
-                        onPressed: _companyPage_2,
-                        color: tema.accentColor,
-                      )
-                    : Container(),
-              ],
-            ),
             bottomNavigationBar: BottomNavigationBar(
-              currentIndex: 0, // this will be set when a new tab is tapped
+              currentIndex:
+                  _currentIndex, // this will be set when a new tab is tapped
+              onTap: changeBottomBarTab,
               type: BottomNavigationBarType.fixed,
               items: [
                 BottomNavigationBarItem(
@@ -382,16 +259,33 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ],
             ),
-            body: Container(
-              height: MediaQuery.of(context).size.height * 1,
-              child: TabBarView(
-                controller: controller,
-                children: [
-                  _homeView,
-                  _companyListViewHome,
-                  _mapView,
-                ],
-              ),
+            body: Stack(
+              children: <Widget>[
+                _bottomBarTabs[_currentIndex],
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: AppBar(
+                    title: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text('ZenTrails'),
+                    ),
+                    backgroundColor: tema.primaryColor.withOpacity(.5),
+                    // backgroundColor: tema.primaryColor,
+
+                    // This is how you add new buttons to the top right of a material appBar.
+                    // You can add as many as you'd like.
+                    actions: <Widget>[
+                      IconButton(
+                        icon: Icon(Icons.account_box),
+                        onPressed: _logInPage,
+                        color: tema.accentColor,
+                      ),
+                    ],
+                  ),
+                )
+              ],
             ),
           )
         : _loadingView;

@@ -68,12 +68,8 @@ class AuthScreenState extends State<AuthScreen> {
     final container = AppStateContainer.of(context);
     var tema = Theme.of(context);
 
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('Log in Page'),
-          backgroundColor: tema.primaryColor,
-        ),
-        body: FutureBuilder<bool>(
+    return Container(
+        child: FutureBuilder<bool>(
             future: container.initUser(),
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               if (snapshot.hasData) {

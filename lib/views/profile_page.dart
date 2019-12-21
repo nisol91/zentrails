@@ -1,4 +1,9 @@
+import '../main.dart';
+
+import 'auth_screen.dart';
+import 'map_view.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../app_state_container.dart';
@@ -22,39 +27,41 @@ class _ProfilePageState extends State<ProfilePage> {
   bool loaded = false;
   bool serviceLoaded = false;
 
+  bool authenticated;
+
   List _favServices;
 
   @override
   initState() {
     super.initState();
-    getUser();
+    getIfAuthenticated();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    createFavList();
+    // createFavList();
   }
 
   void createFavList() {
-    new Future.delayed(new Duration(milliseconds: 2000), () {
-      Firestore.instance
-          .collection("users")
-          .document(AppStateContainer.of(context).id)
-          .collection('Service_favourite')
-          .getDocuments()
-          .then((doc) {
-        // print('================');
-        // print('SERVICE NAME${doc.documents[0]['service_name']}');
-        // print('================');
-        setState(() {
-          _favServices = doc.documents.toList();
-        });
+    // new Future.delayed(new Duration(milliseconds: 2000), () {
+    //   Firestore.instance
+    //       .collection("users")
+    //       .document(AppStateContainer.of(context).id)
+    //       .collection('Service_favourite')
+    //       .getDocuments()
+    //       .then((doc) {
+    //     // print('================');
+    //     // print('SERVICE NAME${doc.documents[0]['service_name']}');
+    //     // print('================');
+    //     setState(() {
+    //       _favServices = doc.documents.toList();
+    //     });
 
-        // print(_favServices[0]['service_name']);
-        serviceLoaded = true;
-      });
-    });
+    //     // print(_favServices[0]['service_name']);
+    //     serviceLoaded = true;
+    //   });
+    // });
   }
 
 //QUESTA FUNZIONE ANDREBBE TOLTA E SOSTITUITA COL GETUSER() DELL APP STATE
@@ -97,20 +104,30 @@ class _ProfilePageState extends State<ProfilePage> {
 //che finisca la chiamata asincrona qui sopra all user
 //, pero tanto è solo per una sicurezza della pagina utente se per caso qualcuno
 // riuscisse a navigarci direttamente, comunque non la vede se non è loggato con una mail
-  Widget get _pageToDisplay {
-    if (loaded == false) {
-      print('loading');
-
-      return _loading;
+  void getIfAuthenticated() async {
+    await getUser();
+    if (email == '') {
+      setState(() {
+        authenticated = false;
+      });
     } else {
-      if (email != '') {
-        print('dentro a profile view');
-        print(email);
-        return _profileView;
-      } else {
-        print('dentro a no access');
+      authenticated = true;
+    }
+  }
 
-        return _noAccess;
+  Widget get _pageToDisplay {
+    if (authenticated == false) {
+      print('you are not logged in');
+      // return Container();
+      return AuthScreen();
+    } else if (authenticated == true) {
+      if (loaded == false) {
+        print('..loading');
+        print(loaded);
+        return _loading;
+      } else {
+        print('dentro a profile view');
+        return _profileView;
       }
     }
   }
@@ -136,185 +153,174 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget get _favServList {
-    return Expanded(
-      flex: 3,
-      child: (serviceLoaded)
-          ? ListView.builder(
-              scrollDirection: Axis.vertical,
-              physics: BouncingScrollPhysics(),
-              itemCount: _favServices.length,
-              itemBuilder: (buildContext, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(left: 15.0, right: 15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Card(
-                          elevation: 3,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                                width: MediaQuery.of(context).size.width * 0.8,
-                                child: Column(
-                                  children: <Widget>[
-                                    Text(_favServices[index]['service_name']),
-                                    Text(_favServices[index]
-                                        ['service_description']),
-                                  ],
-                                )),
-                          ),
-                        ),
-                      ),
-                    ],
+  Widget get _logOutButton {
+    final container = AppStateContainer.of(context);
+
+    return Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: <Widget>[
+          new RaisedButton(
+            onPressed: () => {
+              print(container.firebaseUser),
+              print(container.googleUser),
+              container.signOut().whenComplete(() {
+                Navigator.pop(context);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (BuildContext context) {
+                      return MyHomePage();
+                    },
                   ),
                 );
-                // return ServiceCard(serviceDetails: _favServices[index]);
-              })
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: LinearProgressIndicator())
-              ],
+                Flushbar(
+                  title: "Hey Ninja",
+                  message: "Logged Out!!",
+                  duration: Duration(seconds: 3),
+                  backgroundColor: Theme.of(context).accentColor,
+                )..show(context);
+              }),
+            },
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: new BorderRadius.circular(10.0),
+                side: BorderSide(color: Colors.grey)),
+            child: new Container(
+              width: 250.0,
+              // width: MediaQuery.of(context).size.width * .5,
+              height: 50.0,
+              alignment: Alignment.center,
+              child: new Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  new Text(
+                    'Sign Out',
+                    textAlign: TextAlign.center,
+                    style: new TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.teal[900],
+                    ),
+                  ),
+                ],
+              ),
             ),
-    );
+          )
+        ]);
   }
 
   Widget get _profileView {
     var tema = Theme.of(context);
 
-    return Container(
-        width: MediaQuery.of(context).size.height * 1,
-        child: (loaded == true)
-            ? Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Expanded(
-                    flex: 6,
-                    child: Column(
-                      children: <Widget>[
-                        Image.network(
-                          '${profilePic ?? profilePic}',
-                          height: 70,
-                          loadingBuilder: (BuildContext context, Widget child,
-                              ImageChunkEvent loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(
-                              child: LinearProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes
-                                    : null,
+    return Padding(
+      padding: const EdgeInsets.only(top: 80),
+      child: Container(
+          width: MediaQuery.of(context).size.height * 1,
+          child: (loaded == true)
+              ? Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Expanded(
+                      flex: 6,
+                      child: Column(
+                        children: <Widget>[
+                          Image.network(
+                            '${profilePic ?? profilePic}',
+                            height: 70,
+                            loadingBuilder: (BuildContext context, Widget child,
+                                ImageChunkEvent loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: LinearProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes
+                                      : null,
+                                ),
+                              );
+                            },
+                          ),
+                          Text(
+                            name ?? name,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 22,
+                                fontStyle: FontStyle.normal),
+                          ),
+                          Text(
+                            lastname ?? lastname,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 22,
+                                fontStyle: FontStyle.normal,
+                                color: Colors.grey[500]),
+                          ),
+                          Text(
+                            email ?? email,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 22,
+                                fontStyle: FontStyle.normal,
+                                color: Colors.grey[500]),
+                          ),
+                          Text(
+                            'Total points: ${points ?? points}',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 22,
+                                fontStyle: FontStyle.normal,
+                                color: Colors.grey[500]),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Row(
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(left: 5.0),
+                            child: _logOutButton,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Container(
+                          width: 500,
+                          child: Material(
+                            child: InkWell(
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (BuildContext context) {
+                                    return SettingsPage();
+                                  },
+                                ),
                               ),
-                            );
-                          },
-                        ),
-                        Text(
-                          name ?? name,
-                          style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 22,
-                              fontStyle: FontStyle.normal),
-                        ),
-                        Text(
-                          lastname ?? lastname,
-                          style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 22,
-                              fontStyle: FontStyle.normal,
-                              color: Colors.grey[500]),
-                        ),
-                        Text(
-                          email ?? email,
-                          style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 22,
-                              fontStyle: FontStyle.normal,
-                              color: Colors.grey[500]),
-                        ),
-                        Text(
-                          'Total points: ${points ?? points}',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 22,
-                              fontStyle: FontStyle.normal,
-                              color: Colors.grey[500]),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Row(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(left: 15.0),
-                          child: Text(
-                            'FavList',
-                            style: tema.textTheme.body2,
+                              child: Center(child: Text('Settings')),
+                            ),
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  _favServList,
-                  Expanded(
-                    flex: 2,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(left: 15.0),
-                          child: Text(
-                            'Settings',
-                            style: tema.textTheme.body2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 8,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Container(
-                          width: MediaQuery.of(context).size.width * 1,
-                          height: MediaQuery.of(context).size.width * 0.7,
-                          child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: (serviceLoaded)
-                                  ? SettingsPage()
-                                  : (tema.brightness != Brightness.dark)
-                                      ? PKCardPageSkeleton(
-                                          totalLines: 2,
-                                        )
-                                      : PKDarkCardPageSkeleton(
-                                          totalLines: 2,
-                                        ))),
-                    ),
-                  ),
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[CircularProgressIndicator()]));
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[CircularProgressIndicator()])),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('User & Settings'),
-          actions: <Widget>[],
-        ),
-        body: _pageToDisplay);
+    return Container(
+      child: _pageToDisplay,
+    );
   }
 }
