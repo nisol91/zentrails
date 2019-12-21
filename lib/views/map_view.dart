@@ -12,13 +12,22 @@ class MapView extends StatelessWidget {
       ),
       layers: [
         TileLayerOptions(
-          urlTemplate: "https://api.tiles.mapbox.com/v4/"
-              "{id}/{z}/{x}/{y}@2x.png?access_token={accessToken}",
-          additionalOptions: {
-            'accessToken':
-                'pk.eyJ1Ijoibmlzb2w5MSIsImEiOiJjazBjaWRvbTIwMWpmM2hvMDhlYWhhZGV0In0.wyRaVw6FXdw6g3wp3t9FNQ',
-            'id': 'mapbox.streets',
-          },
+          //thunderforest
+          urlTemplate:
+              "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
+
+          //opentopo
+          // urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+          // subdomains: ['a', 'b', 'c'],
+
+          //mapbox
+          // urlTemplate: "https://{s}.tile.opentopomap.org/"
+          //     "{z}/{x}/{y}.png",
+          // additionalOptions: {
+          // 'accessToken':
+          //     'pk.eyJ1Ijoibmlzb2w5MSIsImEiOiJjazBjaWRvbTIwMWpmM2hvMDhlYWhhZGV0In0.wyRaVw6FXdw6g3wp3t9FNQ',
+          // 'id': 'mapbox.streets',
+          // },
         ),
         MarkerLayerOptions(
           markers: [
@@ -27,8 +36,8 @@ class MapView extends StatelessWidget {
               height: 80.0,
               point: LatLng(44.5, 10),
               builder: (ctx) => Container(
-                child: Image.asset('assets/echo_logo.png'),
-              ),
+                  // child: Image.asset('assets/echo_logo.png'),
+                  ),
             ),
           ],
         ),
