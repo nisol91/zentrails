@@ -206,37 +206,40 @@ class _CompanyListState extends State<CompanyList> {
 
   Widget get _filters {
     return Container(
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: SizedBox(
-              height: 70,
-              child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: filters.length,
-                  itemBuilder: (BuildContext ctxt, int index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Material(
-                        child: InkWell(
-                          onTap: () => selectFilter(filters[index]),
-                          child: Container(
-                            height: 30,
-                            width: MediaQuery.of(context).size.width * 0.25,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Text(filters[index]),
-                              ],
+      child: Expanded(
+        flex: 1,
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: SizedBox(
+                height: 70,
+                child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: filters.length,
+                    itemBuilder: (BuildContext ctxt, int index) {
+                      return Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Material(
+                          child: InkWell(
+                            onTap: () => selectFilter(filters[index]),
+                            child: Container(
+                              height: 30,
+                              width: MediaQuery.of(context).size.width * 0.25,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Text(filters[index]),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

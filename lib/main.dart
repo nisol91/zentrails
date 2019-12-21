@@ -215,31 +215,34 @@ class _MyHomePageState extends State<MyHomePage>
                 .toList();
             return Column(
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(
-                                    color: tema.dividerColor, width: 3))),
-                        child: SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.25,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: companies.length,
-                            itemBuilder: (buildContext, index) =>
-                                (companies[index].featured == true)
-                                    ? CompanyCard(
-                                        companyDetails: companies[index],
-                                        featuredColor: tema.primaryColor,
-                                      )
-                                    : Container(),
+                Expanded(
+                  flex: 1,
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              border: Border(
+                                  bottom: BorderSide(
+                                      color: tema.dividerColor, width: 3))),
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.25,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: companies.length,
+                              itemBuilder: (buildContext, index) =>
+                                  (companies[index].featured == true)
+                                      ? CompanyCard(
+                                          companyDetails: companies[index],
+                                          featuredColor: tema.primaryColor,
+                                        )
+                                      : Container(),
+                            ),
                           ),
                         ),
-                      ),
-                    )
-                  ],
+                      )
+                    ],
+                  ),
                 ),
                 Row(
                   children: <Widget>[
@@ -355,14 +358,27 @@ class _MyHomePageState extends State<MyHomePage>
             ),
             bottomNavigationBar: BottomNavigationBar(
               currentIndex: 0, // this will be set when a new tab is tapped
+              type: BottomNavigationBarType.fixed,
               items: [
                 BottomNavigationBarItem(
                   icon: new Icon(Icons.home),
-                  title: new Text('Home'),
+                  title: new Text('Maps'),
+                  backgroundColor: Colors.black,
                 ),
                 BottomNavigationBarItem(
                   icon: new Icon(Icons.mail),
-                  title: new Text('Messages'),
+                  title: new Text('Stats'),
+                  backgroundColor: Colors.black,
+                ),
+                BottomNavigationBarItem(
+                  icon: new Icon(Icons.traffic),
+                  title: new Text('Tracks'),
+                  backgroundColor: Colors.black,
+                ),
+                BottomNavigationBarItem(
+                  icon: new Icon(Icons.verified_user),
+                  title: new Text('User'),
+                  backgroundColor: Colors.black,
                 ),
               ],
             ),
@@ -374,9 +390,6 @@ class _MyHomePageState extends State<MyHomePage>
                   _homeView,
                   _companyListViewHome,
                   _mapView,
-                  // Text('tab cosa ci metto?una mappa? una lista di citta?'),
-                  // new CompanyList(),
-                  // new AuthScreen(),
                 ],
               ),
             ),
