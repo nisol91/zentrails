@@ -259,6 +259,8 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ],
             ),
+            //questo modo di fare l'appbar è diverso da quello convenzionale:
+            // mi permette di fare un appbar trasparente.
             body: Stack(
               children: <Widget>[
                 _bottomBarTabs[_currentIndex],
@@ -272,10 +274,6 @@ class _MyHomePageState extends State<MyHomePage>
                       child: Text('ZenTrails'),
                     ),
                     backgroundColor: tema.primaryColor.withOpacity(.5),
-                    // backgroundColor: tema.primaryColor,
-
-                    // This is how you add new buttons to the top right of a material appBar.
-                    // You can add as many as you'd like.
                     actions: <Widget>[
                       IconButton(
                         icon: Icon(Icons.account_box),

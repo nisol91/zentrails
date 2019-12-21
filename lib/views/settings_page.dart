@@ -45,33 +45,41 @@ class SettingsList extends StatelessWidget {
       }
     }
 
-    return StreamBuilder<QuerySnapshot>(
-      stream: Firestore.instance.collection('settings').snapshots(),
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
-        switch (snapshot.connectionState) {
-          case ConnectionState.waiting:
-            return Center(
-              child: new Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[CircularProgressIndicator()]),
-            );
-          default:
-            return new ListView(
-              children:
-                  snapshot.data.documents.map((DocumentSnapshot document) {
-                return new ListTile(
-                  onTap: () {
-                    selectSetting(document['tag']);
-                  },
-                  title: new Text(document['name']),
-                  subtitle: new Text(document['description']),
-                );
-              }).toList(),
-            );
-        }
-      },
+    return Scaffold(
+      appBar: new AppBar(
+        title: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text('ZenTrails'),
+        ),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: Firestore.instance.collection('settings').snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Center(
+                child: new Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[CircularProgressIndicator()]),
+              );
+            default:
+              return new ListView(
+                children:
+                    snapshot.data.documents.map((DocumentSnapshot document) {
+                  return new ListTile(
+                    onTap: () {
+                      selectSetting(document['tag']);
+                    },
+                    title: new Text(document['name']),
+                    subtitle: new Text(document['description']),
+                  );
+                }).toList(),
+              );
+          }
+        },
+      ),
     );
   }
 }

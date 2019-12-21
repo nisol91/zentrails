@@ -156,57 +156,52 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget get _logOutButton {
     final container = AppStateContainer.of(context);
 
-    return Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: <Widget>[
-          new RaisedButton(
-            onPressed: () => {
-              print(container.firebaseUser),
-              print(container.googleUser),
-              container.signOut().whenComplete(() {
-                Navigator.pop(context);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (BuildContext context) {
-                      return MyHomePage();
-                    },
-                  ),
-                );
-                Flushbar(
-                  title: "Hey Ninja",
-                  message: "Logged Out!!",
-                  duration: Duration(seconds: 3),
-                  backgroundColor: Theme.of(context).accentColor,
-                )..show(context);
-              }),
-            },
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-                borderRadius: new BorderRadius.circular(10.0),
-                side: BorderSide(color: Colors.grey)),
-            child: new Container(
-              width: 250.0,
-              // width: MediaQuery.of(context).size.width * .5,
-              height: 50.0,
-              alignment: Alignment.center,
-              child: new Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  new Text(
-                    'Sign Out',
-                    textAlign: TextAlign.center,
-                    style: new TextStyle(
-                      fontSize: 16.0,
-                      color: Colors.teal[900],
-                    ),
-                  ),
-                ],
+    return RaisedButton(
+      onPressed: () => {
+        print(container.firebaseUser),
+        print(container.googleUser),
+        container.signOut().whenComplete(() {
+          Navigator.pop(context);
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (BuildContext context) {
+                return MyHomePage();
+              },
+            ),
+          );
+          Flushbar(
+            title: "Hey Ninja",
+            message: "Logged Out!!",
+            duration: Duration(seconds: 3),
+            backgroundColor: Theme.of(context).accentColor,
+          )..show(context);
+        }),
+      },
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+          borderRadius: new BorderRadius.circular(10.0),
+          side: BorderSide(color: Colors.grey)),
+      child: new Container(
+        width: 250.0,
+        // width: MediaQuery.of(context).size.width * .5,
+        height: 50.0,
+        alignment: Alignment.center,
+        child: new Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            new Text(
+              'Sign Out',
+              textAlign: TextAlign.center,
+              style: new TextStyle(
+                fontSize: 16.0,
+                color: Colors.teal[900],
               ),
             ),
-          )
-        ]);
+          ],
+        ),
+      ),
+    );
   }
 
   Widget get _profileView {
@@ -277,17 +272,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     Expanded(
-                      flex: 3,
-                      child: Row(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(left: 5.0),
-                            child: _logOutButton,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
                       flex: 2,
                       child: Padding(
                         padding: const EdgeInsets.only(top: 10),
@@ -306,6 +290,18 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                         ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(left: 5.0),
+                            child: _logOutButton,
+                          ),
+                        ],
                       ),
                     ),
                   ],
