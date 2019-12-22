@@ -5,41 +5,125 @@ import 'package:latlong/latlong.dart';
 class MapView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return FlutterMap(
-      options: MapOptions(
-        center: LatLng(44.5, 10),
-        zoom: 8.0,
-      ),
-      layers: [
-        TileLayerOptions(
-          //thunderforest
-          urlTemplate:
-              "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
+    return Stack(
+      children: <Widget>[
+        FlutterMap(
+          options: MapOptions(
+            center: LatLng(44.5, 10),
+            zoom: 8.0,
+          ),
+          layers: [
+            TileLayerOptions(
+              //thunderforest
+              urlTemplate:
+                  "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
 
-          //opentopo
-          // urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-          // subdomains: ['a', 'b', 'c'],
+              //opentopo
+              // urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+              // subdomains: ['a', 'b', 'c'],
 
-          //mapbox
-          // urlTemplate: "https://{s}.tile.opentopomap.org/"
-          //     "{z}/{x}/{y}.png",
-          // additionalOptions: {
-          // 'accessToken':
-          //     'pk.eyJ1Ijoibmlzb2w5MSIsImEiOiJjazBjaWRvbTIwMWpmM2hvMDhlYWhhZGV0In0.wyRaVw6FXdw6g3wp3t9FNQ',
-          // 'id': 'mapbox.streets',
-          // },
-        ),
-        MarkerLayerOptions(
-          markers: [
-            Marker(
-              width: 80.0,
-              height: 80.0,
-              point: LatLng(44.5, 10),
-              builder: (ctx) => Container(
-                  // child: Image.asset('assets/echo_logo.png'),
-                  ),
+              //mapbox
+              // urlTemplate: "https://{s}.tile.opentopomap.org/"
+              //     "{z}/{x}/{y}.png",
+              // additionalOptions: {
+              // 'accessToken':
+              //     'pk.eyJ1Ijoibmlzb2w5MSIsImEiOiJjazBjaWRvbTIwMWpmM2hvMDhlYWhhZGV0In0.wyRaVw6FXdw6g3wp3t9FNQ',
+              // 'id': 'mapbox.streets',
+              // },
+            ),
+            MarkerLayerOptions(
+              markers: [
+                Marker(
+                  width: 80.0,
+                  height: 80.0,
+                  point: LatLng(44.5, 10),
+                  builder: (ctx) => Container(
+                      // child: Image.asset('assets/echo_logo.png'),
+                      ),
+                ),
+              ],
             ),
           ],
+        ),
+        Positioned(
+          top: 100,
+          right: 20,
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: Ink(
+                decoration: const ShapeDecoration(
+                  color: Colors.lightBlue,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.list),
+                  color: Colors.white,
+                  onPressed: () => print('btn maps pressed'),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 30,
+          left: 20,
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: Ink(
+                decoration: const ShapeDecoration(
+                  color: Colors.lightBlue,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.my_location),
+                  color: Colors.white,
+                  onPressed: () => print('locate position'),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 30,
+          right: 20,
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: Ink(
+                decoration: const ShapeDecoration(
+                  color: Colors.lightBlue,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.remove),
+                  color: Colors.white,
+                  onPressed: () => print('zoom out'),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 100,
+          right: 20,
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: Ink(
+                decoration: const ShapeDecoration(
+                  color: Colors.lightBlue,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.add),
+                  color: Colors.white,
+                  onPressed: () => print('zoom in'),
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );

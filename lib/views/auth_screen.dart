@@ -82,7 +82,7 @@ class AuthScreenState extends State<AuthScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
                         Container(
-                          child: Text('LOGO ECHO'),
+                          child: Text('LOGO ZENTRAILS'),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(30.0),
@@ -387,50 +387,13 @@ class AuthScreenState extends State<AuthScreen> {
                   );
                 } else {
                   return Container(
-                      width: width,
-                      child: new Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            new RaisedButton(
-                              onPressed: () => {
-                                print(container.firebaseUser),
-                                print(container.googleUser),
-                                container.signOut().whenComplete(() {
-                                  Navigator.pop(context);
-                                  Flushbar(
-                                    title: "Hey Ninja",
-                                    message: "Logged Out!!",
-                                    duration: Duration(seconds: 3),
-                                    backgroundColor:
-                                        Theme.of(context).accentColor,
-                                  )..show(context);
-                                }),
-                              },
-                              color: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: new BorderRadius.circular(10.0),
-                                  side: BorderSide(color: Colors.grey)),
-                              child: new Container(
-                                width: 250.0,
-                                height: 50.0,
-                                alignment: Alignment.center,
-                                child: new Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    new Text(
-                                      'Sign Out',
-                                      textAlign: TextAlign.center,
-                                      style: new TextStyle(
-                                        fontSize: 16.0,
-                                        color: Colors.teal[900],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          ]));
+                    width: MediaQuery.of(context).size.width * 1,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[CircularProgressIndicator()],
+                    ),
+                  );
                 }
               } else {
                 return Container(

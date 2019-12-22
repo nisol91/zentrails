@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   ThemeData get _themeData => new ThemeData(
         primaryColor: Colors.blueGrey[400],
         secondaryHeaderColor: Colors.blueGrey[200],
-        accentColor: Colors.blueGrey[900],
+        accentColor: Colors.blueGrey[500],
         dividerColor: Colors.blueGrey[600],
 
         scaffoldBackgroundColor: Colors.white,
@@ -41,23 +41,23 @@ class MyApp extends StatelessWidget {
         textTheme: TextTheme(
             headline: TextStyle(
               fontSize: 72.0,
-              color: Colors.blueGrey[900],
+              color: Colors.blueGrey[500],
             ),
             title: TextStyle(
               fontSize: 36.0,
-              color: Colors.blueGrey[900],
+              color: Colors.blueGrey[500],
             ),
             body1: TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 16,
               fontStyle: FontStyle.normal,
-              color: Colors.blueGrey[900],
+              color: Colors.blueGrey[500],
             ),
             body2: TextStyle(
               fontWeight: FontWeight.w900,
               fontSize: 22,
               fontStyle: FontStyle.normal,
-              color: Colors.blueGrey[900],
+              color: Colors.blueGrey[500],
             )),
       );
   @override
