@@ -34,7 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   initState() {
     super.initState();
-    getIfAuthenticated();
+    checkIfAuthenticated();
   }
 
   @override
@@ -100,11 +100,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-//so che non è asincrona e quindi sarebbe poco ortodosso perchè non aspetta
-//che finisca la chiamata asincrona qui sopra all user
-//, pero tanto è solo per una sicurezza della pagina utente se per caso qualcuno
-// riuscisse a navigarci direttamente, comunque non la vede se non è loggato con una mail
-  void getIfAuthenticated() async {
+  void checkIfAuthenticated() async {
     await getUser();
     if (email == '') {
       setState(() {
@@ -118,7 +114,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget get _pageToDisplay {
     if (authenticated == false) {
       print('you are not logged in');
-      // return Container();
       return AuthScreen();
     } else if (authenticated == true) {
       if (loaded == false) {
@@ -130,6 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
         return _profileView;
       }
     }
+    return _loading;
   }
 
   Widget get _loading {
