@@ -157,14 +157,8 @@ class _ProfilePageState extends State<ProfilePage> {
         print(container.firebaseUser),
         print(container.googleUser),
         container.signOut().whenComplete(() {
-          Navigator.pop(context);
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (BuildContext context) {
-                return MyHomePage();
-              },
-            ),
-          );
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
           Flushbar(
             title: "Hey Ninja",
             message: "Logged Out!!",
