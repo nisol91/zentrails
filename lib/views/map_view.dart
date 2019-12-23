@@ -26,10 +26,14 @@ class _MapViewState extends State<MapView> {
   @override
   initState() {
     super.initState();
-    zoomLevel = 10;
     mapController = MapController();
-    position = LatLng(44.5, 10);
+    zoomLevel = 3;
+    position = LatLng(44, 11);
     getMyGPSLocation();
+  }
+
+  void _locateMyPosition(currentLat, currentLng, zoomLevel) {
+    mapController.move(LatLng(currentLat, currentLng), zoomLevel);
   }
 
   void getMyGPSLocation() async {
@@ -41,13 +45,14 @@ class _MapViewState extends State<MapView> {
       currentSpeed = currentLocation.speed;
       gpsPosition = LatLng(currentLat, currentLng);
     });
-
+    //mi va subito alla positione aggiornandola se c è
+    _locateMyPosition(currentLat, currentLng, 10.0);
     print(currentLocation.latitude);
     print(currentLocation.longitude);
     print(currentLocation.speed);
     print(currentLocation.altitude);
 
-//cosi streamo la mia posizione in continuo
+    //cosi streamo la mia posizione in continuo
     // location.onLocationChanged().listen((LocationData currentLocation) {
     //    print(currentLocation.latitude);
     //    print(currentLocation.longitude);
@@ -105,6 +110,7 @@ class _MapViewState extends State<MapView> {
           mapController: mapController,
           options: MapOptions(
             center: position,
+            interactive: true,
             zoom: zoomLevel,
             onPositionChanged: (position, bool) {
               double lat = position.center.latitude.toDouble();
@@ -220,8 +226,7 @@ class _MapViewState extends State<MapView> {
                   icon: Icon(Icons.my_location),
                   color: Colors.white,
                   onPressed: () {
-                    mapController.move(
-                        LatLng(currentLat, currentLng), zoomLevel);
+                    _locateMyPosition(currentLat, currentLng, zoomLevel);
 
                     print('locate position');
                   },
