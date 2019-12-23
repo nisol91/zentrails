@@ -176,7 +176,7 @@ class _MyHomePageState extends State<MyHomePage>
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: <Widget>[
-                  Text('zenmaps'),
+                  Text('zentrails'),
                   // Image(image: AssetImage('assets/echo_logo.png'))
                 ],
               ),

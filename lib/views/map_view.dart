@@ -13,9 +13,11 @@ class _MapViewState extends State<MapView> {
   LatLng position;
   MapController mapController;
   LocationData currentLocation;
+  bool youHaveTappedOnModal = false;
   double currentLat;
   double currentLng;
   double currentAlt;
+  double currentSpeed;
 
   var location = new Location();
 
@@ -34,6 +36,8 @@ class _MapViewState extends State<MapView> {
       currentAlt = currentLocation.altitude;
       currentLat = currentLocation.latitude;
       currentLng = currentLocation.longitude;
+      currentSpeed = currentLocation.speed;
+      position = LatLng(currentLat, currentLng);
     });
 
     print(currentLocation.latitude);
@@ -41,10 +45,21 @@ class _MapViewState extends State<MapView> {
     print(currentLocation.speed);
     print(currentLocation.altitude);
 
-    location.onLocationChanged().listen((LocationData currentLocation) {
-      print(currentLocation.latitude);
-      print(currentLocation.longitude);
+//cosi streamo la mia posizione in continuo
+    // location.onLocationChanged().listen((LocationData currentLocation) {
+    //    print(currentLocation.latitude);
+    //    print(currentLocation.longitude);
+    //   setState(() {
+    //     position = LatLng(currentLocation.latitude, currentLocation.longitude);
+    //   });
+    // });
+  }
+
+  void _onMyPositionChanging(lat, lng) {
+    setState(() {
+      position = LatLng(lat, lng);
     });
+    print('my current map position is -> lat${lat}, lng${lng}');
   }
 
   _onMapTapped(LatLng point) {
@@ -52,6 +67,22 @@ class _MapViewState extends State<MapView> {
         Epsg3857().latLngToPoint(mapController.center, mapController.zoom);
     print('Map Center: ${mapController.center}, zoom: ${mapController.zoom}');
     print('Screen position: $screenPosition');
+  }
+
+  Widget get _youHaveTappedOn {
+    return SimpleDialog(
+      title: const Text('You have tapped on:'),
+      children: <Widget>[
+        SimpleDialogOption(
+          child: Column(
+            children: <Widget>[
+              Text('Coords->${mapController.center}'),
+              Text('Zoom->${mapController.zoom}'),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -65,7 +96,20 @@ class _MapViewState extends State<MapView> {
           options: MapOptions(
             center: position,
             zoom: zoomLevel,
-            onTap: (point) => _onMapTapped(point),
+            onPositionChanged: (position, bool) {
+              double lat = position.center.latitude.toDouble();
+              double lng = position.center.longitude.toDouble();
+              print(lat);
+              print(lng);
+
+              _onMyPositionChanging(lat, lng);
+            },
+            onTap: (point) {
+              _onMapTapped(point);
+              setState(() {
+                youHaveTappedOnModal = !youHaveTappedOnModal;
+              });
+            },
           ),
           layers: [
             TileLayerOptions(
@@ -100,6 +144,7 @@ class _MapViewState extends State<MapView> {
             ),
           ],
         ),
+        (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
         Positioned(
             top: 100,
             left: 20,
@@ -108,6 +153,7 @@ class _MapViewState extends State<MapView> {
               child: Column(
                 children: <Widget>[
                   Text('Altitude->${currentAlt.toString()}'),
+                  Text('Speed->${currentSpeed.toString()}'),
                   Text('Lat->${currentLat.toString()}'),
                   Text('Lng->${currentLng.toString()}'),
                 ],
@@ -148,11 +194,9 @@ class _MapViewState extends State<MapView> {
                   icon: Icon(Icons.my_location),
                   color: Colors.white,
                   onPressed: () {
-                    mapController.move(LatLng(currentLat, currentLng), 10);
+                    mapController.move(
+                        LatLng(currentLat, currentLng), zoomLevel);
 
-                    setState(() {
-                      position = LatLng(30, 20);
-                    });
                     print('locate position');
                   },
                 ),
@@ -174,7 +218,13 @@ class _MapViewState extends State<MapView> {
                 child: IconButton(
                   icon: Icon(Icons.remove),
                   color: Colors.white,
-                  onPressed: () => print('zoom out'),
+                  onPressed: () {
+                    setState(() {
+                      zoomLevel = zoomLevel - 1;
+                    });
+                    mapController.move(position, zoomLevel);
+                    print('zoom out');
+                  },
                 ),
               ),
             ),
@@ -195,8 +245,11 @@ class _MapViewState extends State<MapView> {
                   icon: Icon(Icons.add),
                   color: Colors.white,
                   onPressed: () {
+                    setState(() {
+                      zoomLevel = zoomLevel + 1;
+                    });
+                    mapController.move(position, zoomLevel);
                     print('zoom in');
-                    mapController.move(LatLng(44.5, 11), 15);
                   },
                 ),
               ),
