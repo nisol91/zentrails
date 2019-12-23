@@ -134,11 +134,17 @@ class _MapViewState extends State<MapView> {
           layers: [
             TileLayerOptions(
               //thunderforest
+              // urlTemplate:
+              // "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}@2x.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
+
+              //cartodb
               urlTemplate:
-                  "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}@2x.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
+                  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@3x.png",
+              subdomains: ['a', 'b', 'c'],
 
               //opentopo
-              // urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+              // urlTemplate:
+              //     "https://{s}.tile.opentopomap.org/{z}/{x}/{y}@1x.png",
               // subdomains: ['a', 'b', 'c'],
 
               //openstreet
