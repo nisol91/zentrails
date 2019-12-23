@@ -11,6 +11,8 @@ class MapView extends StatefulWidget {
 class _MapViewState extends State<MapView> {
   double zoomLevel;
   LatLng position;
+  LatLng gpsPosition;
+
   MapController mapController;
   LocationData currentLocation;
   bool youHaveTappedOnModal = false;
@@ -37,7 +39,7 @@ class _MapViewState extends State<MapView> {
       currentLat = currentLocation.latitude;
       currentLng = currentLocation.longitude;
       currentSpeed = currentLocation.speed;
-      position = LatLng(currentLat, currentLng);
+      gpsPosition = LatLng(currentLat, currentLng);
     });
 
     print(currentLocation.latitude);
@@ -55,9 +57,10 @@ class _MapViewState extends State<MapView> {
     // });
   }
 
-  void _onMyPositionChanging(lat, lng) {
+  void _onMyPositionChanging(lat, lng, zoom) {
     setState(() {
       position = LatLng(lat, lng);
+      zoomLevel = zoom;
     });
     print('my current map position is -> lat${lat}, lng${lng}');
   }
@@ -106,10 +109,13 @@ class _MapViewState extends State<MapView> {
             onPositionChanged: (position, bool) {
               double lat = position.center.latitude.toDouble();
               double lng = position.center.longitude.toDouble();
+              double zoom = position.zoom.toDouble();
+
               print(lat);
               print(lng);
+              print('ZOOOOOOM${position.zoom}');
               if (!_building) {
-                _onMyPositionChanging(lat, lng);
+                _onMyPositionChanging(lat, lng, zoom);
               }
             },
             onTap: (point) {
@@ -143,11 +149,19 @@ class _MapViewState extends State<MapView> {
                 Marker(
                   width: 80.0,
                   height: 80.0,
-                  point: LatLng(44.5, 10),
+                  point: gpsPosition,
                   builder: (ctx) => Container(
-                      // child: Image.asset('assets/echo_logo.png'),
-                      ),
+                    child: Icon(Icons.home),
+                  ),
                 ),
+                // Marker(
+                //   width: 80.0,
+                //   height: 80.0,
+                //   point: mapController.center,
+                //   builder: (ctx) => Container(
+                //     child: Icon(Icons.home),
+                //   ),
+                // ),
               ],
             ),
           ],
@@ -257,15 +271,15 @@ class _MapViewState extends State<MapView> {
                     setState(() {
                       zoomLevel = zoomLevel + 1;
                     });
-                    mapController.move(position, zoomLevel + 1);
+                    mapController.move(position, zoomLevel);
                     //questo fix serve perchè pare che la mappa, una volta fatto lo zoom in
                     //col mapcontroller, non ricarichi finche non si sposta.
                     //allora gli faccio cambiare posizione appena dopo aver fatto zoom in
                     new Future.delayed(new Duration(milliseconds: 10), () {
                       setState(() {
                         position = LatLng(
-                            mapController.center.latitude + 0.000001,
-                            mapController.center.longitude + 0.000001);
+                            mapController.center.latitude + 0.00000001,
+                            mapController.center.longitude + 0.00000001);
                       });
                       mapController.move(position, zoomLevel);
                     });
