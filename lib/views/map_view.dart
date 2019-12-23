@@ -89,6 +89,13 @@ class _MapViewState extends State<MapView> {
   Widget build(BuildContext context) {
     var tema = Theme.of(context);
 
+    //questo è un fix per un problema dovuto al chiamare un setState
+    //nell' onPositionChanged
+    bool _building = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _building = false;
+    });
+
     return Stack(
       children: <Widget>[
         FlutterMap(
@@ -101,8 +108,9 @@ class _MapViewState extends State<MapView> {
               double lng = position.center.longitude.toDouble();
               print(lat);
               print(lng);
-
-              _onMyPositionChanging(lat, lng);
+              if (!_building) {
+                _onMyPositionChanging(lat, lng);
+              }
             },
             onTap: (point) {
               _onMapTapped(point);
