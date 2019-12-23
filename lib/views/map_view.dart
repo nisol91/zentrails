@@ -27,10 +27,10 @@ class _MapViewState extends State<MapView> {
     zoomLevel = 10;
     mapController = MapController();
     position = LatLng(44.5, 10);
-    getMyLocation();
+    getMyGPSLocation();
   }
 
-  void getMyLocation() async {
+  void getMyGPSLocation() async {
     currentLocation = await location.getLocation();
     setState(() {
       currentAlt = currentLocation.altitude;
@@ -114,12 +114,12 @@ class _MapViewState extends State<MapView> {
           layers: [
             TileLayerOptions(
               //thunderforest
-              // urlTemplate:
-              //     "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
+              urlTemplate:
+                  "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
 
               //opentopo
-              urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-              subdomains: ['a', 'b', 'c'],
+              // urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+              // subdomains: ['a', 'b', 'c'],
 
               //mapbox
               // urlTemplate: "https://{s}.tile.opentopomap.org/"
@@ -245,10 +245,23 @@ class _MapViewState extends State<MapView> {
                   icon: Icon(Icons.add),
                   color: Colors.white,
                   onPressed: () {
+                    print('il centro della mia vista:${mapController.center}');
                     setState(() {
                       zoomLevel = zoomLevel + 1;
                     });
-                    mapController.move(position, zoomLevel);
+                    mapController.move(position, zoomLevel + 1);
+                    //questo fix serve perchè pare che la mappa, una volta fatto lo zoom in
+                    //col mapcontroller, non ricarichi finche non si sposta.
+                    //allora gli faccio cambiare posizione appena dopo aver fatto zoom in
+                    new Future.delayed(new Duration(milliseconds: 10), () {
+                      setState(() {
+                        position = LatLng(
+                            mapController.center.latitude + 0.000001,
+                            mapController.center.longitude + 0.000001);
+                      });
+                      mapController.move(position, zoomLevel);
+                    });
+
                     print('zoom in');
                   },
                 ),
