@@ -2,15 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
 
-class MapView extends StatelessWidget {
+class MapView extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => _MapViewState();
+}
+
+class _MapViewState extends State<MapView> {
+  double zoomLevel;
+  MapController mapController;
+  @override
+  initState() {
+    super.initState();
+    zoomLevel = 10;
+    mapController = MapController();
+  }
+
+  _onMapTapped(LatLng point) {
+    CustomPoint<num> screenPosition =
+        Epsg3857().latLngToPoint(mapController.center, mapController.zoom);
+    print('Map Center: ${mapController.center}, zoom: ${mapController.zoom}');
+    print('Screen position: $screenPosition');
+  }
+
   @override
   Widget build(BuildContext context) {
+    var tema = Theme.of(context);
+
     return Stack(
       children: <Widget>[
         FlutterMap(
+          mapController: mapController,
           options: MapOptions(
             center: LatLng(44.5, 10),
-            zoom: 8.0,
+            zoom: zoomLevel,
+            onTap: (point) => _onMapTapped(point),
           ),
           layers: [
             TileLayerOptions(
@@ -53,7 +78,7 @@ class MapView extends StatelessWidget {
             child: Center(
               child: Ink(
                 decoration: const ShapeDecoration(
-                  color: Colors.lightBlue,
+                  color: Colors.blueGrey,
                   shape: CircleBorder(),
                 ),
                 child: IconButton(
@@ -73,7 +98,7 @@ class MapView extends StatelessWidget {
             child: Center(
               child: Ink(
                 decoration: const ShapeDecoration(
-                  color: Colors.lightBlue,
+                  color: Colors.blueGrey,
                   shape: CircleBorder(),
                 ),
                 child: IconButton(
@@ -93,7 +118,7 @@ class MapView extends StatelessWidget {
             child: Center(
               child: Ink(
                 decoration: const ShapeDecoration(
-                  color: Colors.lightBlue,
+                  color: Colors.blueGrey,
                   shape: CircleBorder(),
                 ),
                 child: IconButton(
@@ -113,13 +138,21 @@ class MapView extends StatelessWidget {
             child: Center(
               child: Ink(
                 decoration: const ShapeDecoration(
-                  color: Colors.lightBlue,
+                  color: Colors.blueGrey,
                   shape: CircleBorder(),
                 ),
                 child: IconButton(
                   icon: Icon(Icons.add),
                   color: Colors.white,
-                  onPressed: () => print('zoom in'),
+                  onPressed: () {
+                    print('zoom in');
+                    mapController.move(LatLng(44.5, 11), 20);
+                    mapController.toString();
+                    // mapController.onReady.then((result) {
+                    //   print(result);
+                    //   mapController.move(LatLng(44.5, 11), 20);
+                    // });
+                  },
                 ),
               ),
             ),
