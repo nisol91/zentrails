@@ -129,19 +129,23 @@ class _MapViewState extends State<MapView> {
             TileLayerOptions(
               //thunderforest
               urlTemplate:
-                  "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
+                  "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}@2x.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
 
               //opentopo
               // urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
               // subdomains: ['a', 'b', 'c'],
 
+              //openstreet
+              // urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+              // subdomains: ['a', 'b', 'c'],
+
               //mapbox
-              // urlTemplate: "https://{s}.tile.opentopomap.org/"
-              //     "{z}/{x}/{y}.png",
+              // urlTemplate: "https://api.tiles.mapbox.com/v4/"
+              //     "{id}/{z}/{x}/{y}@2x.png?access_token={accessToken}",
               // additionalOptions: {
-              // 'accessToken':
-              //     'pk.eyJ1Ijoibmlzb2w5MSIsImEiOiJjazBjaWRvbTIwMWpmM2hvMDhlYWhhZGV0In0.wyRaVw6FXdw6g3wp3t9FNQ',
-              // 'id': 'mapbox.streets',
+              //   'accessToken':
+              //       'pk.eyJ1Ijoibmlzb2w5MSIsImEiOiJjazBjaWRvbTIwMWpmM2hvMDhlYWhhZGV0In0.wyRaVw6FXdw6g3wp3t9FNQ',
+              //   'id': 'mapbox.streets',
               // },
             ),
             MarkerLayerOptions(
