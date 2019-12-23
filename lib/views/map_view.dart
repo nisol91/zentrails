@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
+import 'package:location/location.dart';
 
 class MapView extends StatefulWidget {
   @override
@@ -9,12 +10,41 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   double zoomLevel;
+  LatLng position;
   MapController mapController;
+  LocationData currentLocation;
+  double currentLat;
+  double currentLng;
+  double currentAlt;
+
+  var location = new Location();
+
   @override
   initState() {
     super.initState();
     zoomLevel = 10;
     mapController = MapController();
+    position = LatLng(44.5, 10);
+    getMyLocation();
+  }
+
+  void getMyLocation() async {
+    currentLocation = await location.getLocation();
+    setState(() {
+      currentAlt = currentLocation.altitude;
+      currentLat = currentLocation.latitude;
+      currentLng = currentLocation.longitude;
+    });
+
+    print(currentLocation.latitude);
+    print(currentLocation.longitude);
+    print(currentLocation.speed);
+    print(currentLocation.altitude);
+
+    location.onLocationChanged().listen((LocationData currentLocation) {
+      print(currentLocation.latitude);
+      print(currentLocation.longitude);
+    });
   }
 
   _onMapTapped(LatLng point) {
@@ -33,19 +63,19 @@ class _MapViewState extends State<MapView> {
         FlutterMap(
           mapController: mapController,
           options: MapOptions(
-            center: LatLng(44.5, 10),
+            center: position,
             zoom: zoomLevel,
             onTap: (point) => _onMapTapped(point),
           ),
           layers: [
             TileLayerOptions(
               //thunderforest
-              urlTemplate:
-                  "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
+              // urlTemplate:
+              //     "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
 
               //opentopo
-              // urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-              // subdomains: ['a', 'b', 'c'],
+              urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+              subdomains: ['a', 'b', 'c'],
 
               //mapbox
               // urlTemplate: "https://{s}.tile.opentopomap.org/"
@@ -70,6 +100,19 @@ class _MapViewState extends State<MapView> {
             ),
           ],
         ),
+        Positioned(
+            top: 100,
+            left: 20,
+            child: Container(
+              color: Colors.white,
+              child: Column(
+                children: <Widget>[
+                  Text('Altitude->${currentAlt.toString()}'),
+                  Text('Lat->${currentLat.toString()}'),
+                  Text('Lng->${currentLng.toString()}'),
+                ],
+              ),
+            )),
         Positioned(
           top: 100,
           right: 20,
@@ -104,7 +147,14 @@ class _MapViewState extends State<MapView> {
                 child: IconButton(
                   icon: Icon(Icons.my_location),
                   color: Colors.white,
-                  onPressed: () => print('locate position'),
+                  onPressed: () {
+                    mapController.move(LatLng(currentLat, currentLng), 10);
+
+                    setState(() {
+                      position = LatLng(30, 20);
+                    });
+                    print('locate position');
+                  },
                 ),
               ),
             ),
@@ -146,12 +196,7 @@ class _MapViewState extends State<MapView> {
                   color: Colors.white,
                   onPressed: () {
                     print('zoom in');
-                    mapController.move(LatLng(44.5, 11), 20);
-                    mapController.toString();
-                    // mapController.onReady.then((result) {
-                    //   print(result);
-                    //   mapController.move(LatLng(44.5, 11), 20);
-                    // });
+                    mapController.move(LatLng(44.5, 11), 15);
                   },
                 ),
               ),
