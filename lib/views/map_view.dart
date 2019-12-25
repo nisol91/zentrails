@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
@@ -21,6 +23,8 @@ class _MapViewState extends State<MapView> {
   double currentAlt;
   double currentSpeed;
 
+  Timer timer;
+
   var location = new Location();
 
   @override
@@ -29,14 +33,20 @@ class _MapViewState extends State<MapView> {
     mapController = MapController();
     zoomLevel = 3;
     position = LatLng(44, 11);
-    getMyGPSLocation();
+    //(in alternativa plugin geolocation)
+    _getMyGPSLocationOnInit();
+    Future.delayed(new Duration(milliseconds: 500), () {
+      _getMyGPSLocationOnMove();
+    });
   }
 
-  void _locateMyPosition(currentLat, currentLng, zoomLevel) {
-    mapController.move(LatLng(currentLat, currentLng), zoomLevel);
+  void _locateMyPosition(lat, lng, zoom) {
+    mapController.move(LatLng(lat, lng), zoom);
   }
 
-  void getMyGPSLocation() async {
+  void _getMyGPSLocationOnInit() async {
+    location.changeSettings(
+        accuracy: LocationAccuracy.HIGH, interval: 10, distanceFilter: 0);
     currentLocation = await location.getLocation();
     setState(() {
       currentAlt = currentLocation.altitude;
@@ -51,18 +61,29 @@ class _MapViewState extends State<MapView> {
     print(currentLocation.longitude);
     print(currentLocation.speed);
     print(currentLocation.altitude);
-
-    //cosi streamo la mia posizione in continuo
-    // location.onLocationChanged().listen((LocationData currentLocation) {
-    //    print(currentLocation.latitude);
-    //    print(currentLocation.longitude);
-    //   setState(() {
-    //     position = LatLng(currentLocation.latitude, currentLocation.longitude);
-    //   });
-    // });
   }
 
-  void _onMyPositionChanging(lat, lng, zoom) {
+  void _getMyGPSLocationOnMove() {
+    //cosi streamo la mia posizione in continuo
+    location.onLocationChanged().listen((LocationData currentLocation) {
+      print(currentLocation.latitude);
+      print(currentLocation.longitude);
+      print('GPS LOCATION CHIAMATO DALLO STREAM');
+      setState(() {
+        position = LatLng(currentLocation.latitude, currentLocation.longitude);
+      });
+    });
+
+    setState(() {
+      currentAlt = currentLocation.altitude;
+      currentLat = currentLocation.latitude;
+      currentLng = currentLocation.longitude;
+      currentSpeed = currentLocation.speed;
+      gpsPosition = LatLng(currentLat, currentLng);
+    });
+  }
+
+  void _onMyPositionChangingOnMapGesture(lat, lng, zoom) {
     setState(() {
       position = LatLng(lat, lng);
       zoomLevel = zoom;
@@ -121,7 +142,7 @@ class _MapViewState extends State<MapView> {
               print(lng);
               print('ZOOOOOOM${position.zoom}');
               if (!_building) {
-                _onMyPositionChanging(lat, lng, zoom);
+                _onMyPositionChangingOnMapGesture(lat, lng, zoom);
               }
             },
             onTap: (point) {
@@ -134,13 +155,13 @@ class _MapViewState extends State<MapView> {
           layers: [
             TileLayerOptions(
               //thunderforest
-              // urlTemplate:
-              // "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}@2x.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
+              urlTemplate:
+                  "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}@2x.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
 
               //cartodb
-              urlTemplate:
-                  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@3x.png",
-              subdomains: ['a', 'b', 'c'],
+              // urlTemplate:
+              //     "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@3x.png",
+              // subdomains: ['a', 'b', 'c'],
 
               //opentopo
               // urlTemplate:
@@ -187,13 +208,14 @@ class _MapViewState extends State<MapView> {
             top: 100,
             left: 20,
             child: Container(
+              padding: const EdgeInsets.all(16),
               color: Colors.white,
               child: Column(
                 children: <Widget>[
-                  Text('Altitude->${currentAlt.toString()}'),
-                  Text('Speed->${currentSpeed.toString()}'),
                   Text('Lat->${currentLat.toString()}'),
                   Text('Lng->${currentLng.toString()}'),
+                  Text('Altitude->${currentAlt.toString()}'),
+                  Text('Speed->${currentSpeed.toString()}'),
                 ],
               ),
             )),
@@ -232,6 +254,7 @@ class _MapViewState extends State<MapView> {
                   icon: Icon(Icons.my_location),
                   color: Colors.white,
                   onPressed: () {
+                    _getMyGPSLocationOnInit();
                     _locateMyPosition(currentLat, currentLng, zoomLevel);
 
                     print('locate position');
