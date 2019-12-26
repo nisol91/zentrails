@@ -200,8 +200,8 @@ class _MyHomePageState extends State<MyHomePage>
   //====bottom navbar control
   final List<Widget> _bottomBarTabs = [
     MapView(),
-    AuthScreen(),
-    CompanyList(),
+    ProfilePage(),
+    ProfilePage(),
     ProfilePage(),
   ];
   Widget changeBottomBarTab(int index) {
@@ -263,7 +263,17 @@ class _MyHomePageState extends State<MyHomePage>
             // mi permette di fare un appbar trasparente.
             body: Stack(
               children: <Widget>[
-                _bottomBarTabs[_currentIndex],
+                //l'indexedstack, al posto di metterci direttamente i widget con: _bottomBarTabs[_currentIndex],
+                // mi permette di far si che non si ricarichi nulla al cambio di tab
+                IndexedStack(
+                  index: _currentIndex,
+                  children: <Widget>[
+                    _bottomBarTabs[0],
+                    _bottomBarTabs[1],
+                    _bottomBarTabs[2],
+                    _bottomBarTabs[3],
+                  ],
+                ),
                 Positioned(
                   top: 0,
                   left: 0,
