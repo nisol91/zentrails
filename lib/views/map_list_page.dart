@@ -61,6 +61,9 @@ class MapList extends StatelessWidget {
                 children:
                     snapshot.data.documents.map((DocumentSnapshot document) {
                   return new ListTile(
+                    selected: (document['tag'] == container.mapTagState)
+                        ? true
+                        : false,
                     onTap: () {
                       container.selectMap(document['tag']);
                       Navigator.pop(context);

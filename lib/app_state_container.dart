@@ -118,6 +118,7 @@ class _AppStateContainerState extends State<AppStateContainer> {
   }
 
   //===========================================
+
   void selectMap(String tag) {
     setState(() {
       mapTagState = tag;
