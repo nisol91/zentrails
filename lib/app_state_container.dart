@@ -65,6 +65,7 @@ class _AppStateContainerState extends State<AppStateContainer> {
   List<Maps> maps;
   List<Maps> mapsFromFetch;
   bool loadedMaps = false;
+  bool showMapListPage = false;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -146,6 +147,12 @@ class _AppStateContainerState extends State<AppStateContainer> {
       print('MAPS!!!!!->${maps[0].name}');
 
       loadedMaps = true;
+    });
+  }
+
+  void closeMapList() {
+    setState(() {
+      showMapListPage = false;
     });
   }
   //===========================================

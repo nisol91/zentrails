@@ -41,7 +41,7 @@ class _MapViewState extends State<MapView> {
     Future.delayed(new Duration(milliseconds: 500), () {
       //(in alternativa plugin geolocation)
       _getMyGPSLocationOnInit();
-      _getMyGPSLocationOnMove();
+      // _getMyGPSLocationOnMove();
     });
   }
 
@@ -140,6 +140,12 @@ class _MapViewState extends State<MapView> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget get _mapList {
+    return Dialog(
+      child: Text('dialog'),
     );
   }
 
@@ -302,14 +308,9 @@ class _MapViewState extends State<MapView> {
                         icon: Icon(Icons.list),
                         color: Colors.white,
                         onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute<Null>(
-                                builder: (BuildContext context) {
-                                  return MapList();
-                                },
-                                fullscreenDialog: true,
-                              ));
+                          setState(() {
+                            container.showMapListPage = true;
+                          });
                         },
                       ),
                     ),
@@ -415,6 +416,7 @@ class _MapViewState extends State<MapView> {
                   ),
                 ),
               ),
+              (container.showMapListPage) ? MapListPage() : Container(),
             ],
           );
   }
