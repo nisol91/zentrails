@@ -41,7 +41,7 @@ class _MapViewState extends State<MapView> {
     Future.delayed(new Duration(milliseconds: 500), () {
       //(in alternativa plugin geolocation)
       _getMyGPSLocationOnInit();
-      // _getMyGPSLocationOnMove();
+      _getMyGPSLocationOnMove();
     });
   }
 
