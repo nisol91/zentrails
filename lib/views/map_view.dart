@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
 import 'package:location/location.dart';
+import '../models/maps_model.dart';
 
 class MapView extends StatefulWidget {
   @override
@@ -23,7 +25,9 @@ class _MapViewState extends State<MapView> {
   double currentAlt;
   double currentSpeed;
 
-  Timer timer;
+  List<Maps> maps;
+  List<Maps> mapsFromFetch;
+  bool loadedMaps = false;
 
   var location = new Location();
 
@@ -31,12 +35,31 @@ class _MapViewState extends State<MapView> {
   initState() {
     super.initState();
     mapController = MapController();
-    zoomLevel = 3;
+    zoomLevel = 12;
     position = LatLng(44, 11);
     //(in alternativa plugin geolocation)
     _getMyGPSLocationOnInit();
     Future.delayed(new Duration(milliseconds: 500), () {
       _getMyGPSLocationOnMove();
+    });
+
+    getMaps();
+  }
+
+  void getMaps() async {
+    print('GETTING=======================');
+    Firestore.instance.collection("maps").snapshots().listen((doc) {
+      mapsFromFetch = doc.documents
+          .map((doc) => Maps.fromMap(doc.data, doc.documentID))
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          maps = mapsFromFetch;
+        });
+      }
+      print('MAPS!!!!!->${maps[0].name}');
+      loadedMaps = true;
     });
   }
 
@@ -69,9 +92,9 @@ class _MapViewState extends State<MapView> {
       print(currentLocation.latitude);
       print(currentLocation.longitude);
       print('GPS LOCATION CHIAMATO DALLO STREAM');
-      //mi va subito alla positione aggiornandola se c è
 
-      _locateMyPosition(currentLat, currentLng, zoomLevel);
+      //mi va subito alla positione aggiornandola se c è
+      // _locateMyPosition(currentLat, currentLng, zoomLevel);
 
       setState(() {
         position = LatLng(currentLocation.latitude, currentLocation.longitude);
@@ -184,11 +207,15 @@ class _MapViewState extends State<MapView> {
             MarkerLayerOptions(
               markers: [
                 Marker(
-                  width: 80.0,
-                  height: 80.0,
+                  width: 50.0,
+                  height: 50.0,
                   point: gpsPosition,
                   builder: (ctx) => Container(
-                    child: Icon(Icons.home),
+                    child: Icon(
+                      Icons.arrow_upward,
+                      color: Colors.red[800],
+                      size: 40,
+                    ),
                   ),
                 ),
                 // Marker(
