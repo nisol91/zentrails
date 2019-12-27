@@ -56,7 +56,7 @@ class _MapViewState extends State<MapView> {
       gpsPosition = LatLng(currentLat, currentLng);
     });
     //mi va subito alla positione aggiornandola se c è
-    _locateMyPosition(currentLat, currentLng, 10.0);
+    _locateMyPosition(currentLat, currentLng, zoomLevel);
     print(currentLocation.latitude);
     print(currentLocation.longitude);
     print(currentLocation.speed);
@@ -69,17 +69,18 @@ class _MapViewState extends State<MapView> {
       print(currentLocation.latitude);
       print(currentLocation.longitude);
       print('GPS LOCATION CHIAMATO DALLO STREAM');
+      //mi va subito alla positione aggiornandola se c è
+
+      _locateMyPosition(currentLat, currentLng, zoomLevel);
+
       setState(() {
         position = LatLng(currentLocation.latitude, currentLocation.longitude);
+        currentAlt = currentLocation.altitude;
+        currentLat = currentLocation.latitude;
+        currentLng = currentLocation.longitude;
+        currentSpeed = currentLocation.speed;
+        gpsPosition = LatLng(currentLat, currentLng);
       });
-    });
-
-    setState(() {
-      currentAlt = currentLocation.altitude;
-      currentLat = currentLocation.latitude;
-      currentLng = currentLocation.longitude;
-      currentSpeed = currentLocation.speed;
-      gpsPosition = LatLng(currentLat, currentLng);
     });
   }
 
