@@ -27,33 +27,25 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: new SettingsList(),
+      body: new MapList(),
     );
   }
 }
 
-class SettingsList extends StatelessWidget {
+class MapList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final container = AppStateContainer.of(context);
-    void selectSetting(tag) {
-      switch (tag) {
-        case 'chgtheme':
-          container.changeTheme();
-          break;
-        default:
-      }
-    }
 
     return Scaffold(
       appBar: new AppBar(
         title: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text('ZenSettings'),
+          child: Text('Map List'),
         ),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: Firestore.instance.collection('settings').snapshots(),
+        stream: Firestore.instance.collection('maps').snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
           switch (snapshot.connectionState) {
@@ -70,7 +62,8 @@ class SettingsList extends StatelessWidget {
                     snapshot.data.documents.map((DocumentSnapshot document) {
                   return new ListTile(
                     onTap: () {
-                      selectSetting(document['tag']);
+                      container.selectMap(document['tag']);
+                      Navigator.pop(context);
                     },
                     title: new Text(document['name']),
                     subtitle: new Text(document['description']),

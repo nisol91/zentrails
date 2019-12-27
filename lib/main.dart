@@ -285,11 +285,11 @@ class _MyHomePageState extends State<MyHomePage>
                     ),
                     backgroundColor: tema.primaryColor.withOpacity(.5),
                     actions: <Widget>[
-                      IconButton(
-                        icon: Icon(Icons.account_box),
-                        onPressed: _logInPage,
-                        color: tema.accentColor,
-                      ),
+                      // IconButton(
+                      //   icon: Icon(Icons.account_box),
+                      //   onPressed: _logInPage,
+                      //   color: tema.accentColor,
+                      // ),
                     ],
                   ),
                 )

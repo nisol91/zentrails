@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'models/maps_model.dart';
 import 'state/app_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -62,6 +61,11 @@ class _AppStateContainerState extends State<AppStateContainer> {
   bool isMailVerified;
   String userId;
 
+  String mapTagState = "opentopomap";
+  List<Maps> maps;
+  List<Maps> mapsFromFetch;
+  bool loadedMaps = false;
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -80,12 +84,16 @@ class _AppStateContainerState extends State<AppStateContainer> {
       print('INIT APP');
       initUser().whenComplete(() => getUser().whenComplete(
           () => startCountdown().whenComplete(() => streamUser())));
+      getMap();
     }
   }
 
   //===========================================
   //change theme dinamically
   void changeTheme() {
+    if (!mounted) {
+      return null;
+    }
     setState(() {
       chooseTheme = !chooseTheme;
     });
@@ -109,6 +117,36 @@ class _AppStateContainerState extends State<AppStateContainer> {
     // streamController.sink.close();
   }
 
+  //===========================================
+  void selectMap(String tag) {
+    setState(() {
+      mapTagState = tag;
+    });
+    print(tag);
+    getMap();
+  }
+
+  void getMap() async {
+    print('GETTING=======================');
+    Firestore.instance
+        .collection("maps")
+        .where('tag', isEqualTo: mapTagState)
+        .snapshots()
+        .listen((doc) {
+      mapsFromFetch = doc.documents
+          .map((doc) => Maps.fromMap(doc.data, doc.documentID))
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          maps = mapsFromFetch;
+        });
+      }
+      print('MAPS!!!!!->${maps[0].name}');
+
+      loadedMaps = true;
+    });
+  }
   //===========================================
 
   Future<AuthResult> signInWithEmail(String email, String password) async {

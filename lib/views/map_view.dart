@@ -1,11 +1,14 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
 import 'package:location/location.dart';
+import '../app_state_container.dart';
 import '../models/maps_model.dart';
+import 'settings_page.dart';
+import '../views/settings_page.dart';
+import '../views/map_list_page.dart';
 
 class MapView extends StatefulWidget {
   @override
@@ -25,45 +28,20 @@ class _MapViewState extends State<MapView> {
   double currentAlt;
   double currentSpeed;
 
-  List<Maps> maps;
-  List<Maps> mapsFromFetch;
-  bool loadedMaps = false;
-
   var location = new Location();
 
   @override
   initState() {
     super.initState();
-    getMaps();
+
     mapController = MapController();
     zoomLevel = 12;
     position = LatLng(44, 11);
-    //(in alternativa plugin geolocation)
-    _getMyGPSLocationOnInit();
+    //dopo che la mappa si è caricata, ricerco la posizione
     Future.delayed(new Duration(milliseconds: 500), () {
+      //(in alternativa plugin geolocation)
+      _getMyGPSLocationOnInit();
       _getMyGPSLocationOnMove();
-    });
-  }
-
-  void getMaps() async {
-    print('GETTING=======================');
-    Firestore.instance
-        .collection("maps")
-        .where('tag', isEqualTo: 'opentopomap')
-        .snapshots()
-        .listen((doc) {
-      mapsFromFetch = doc.documents
-          .map((doc) => Maps.fromMap(doc.data, doc.documentID))
-          .toList();
-
-      if (mounted) {
-        setState(() {
-          maps = mapsFromFetch;
-        });
-      }
-      print('MAPS!!!!!->${maps[0].name}');
-
-      loadedMaps = true;
     });
   }
 
@@ -168,6 +146,7 @@ class _MapViewState extends State<MapView> {
   @override
   Widget build(BuildContext context) {
     var tema = Theme.of(context);
+    final container = AppStateContainer.of(context);
 
     //questo è un fix per un problema dovuto al chiamare un setState
     //nell' onPositionChanged
@@ -176,7 +155,7 @@ class _MapViewState extends State<MapView> {
       _building = false;
     });
 
-    return (!loadedMaps)
+    return (!container.loadedMaps)
         ? _loadingView
         : Stack(
             children: <Widget>[
@@ -208,7 +187,7 @@ class _MapViewState extends State<MapView> {
                 layers: [
                   TileLayerOptions(
                     //select map from DB
-                    urlTemplate: maps[0].url,
+                    urlTemplate: container.maps[0].url,
                     subdomains: ['a', 'b', 'c'],
 
                     //thunderforest
@@ -280,6 +259,35 @@ class _MapViewState extends State<MapView> {
                     ),
                   )),
               Positioned(
+                top: 160,
+                right: 20,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: Ink(
+                      decoration: const ShapeDecoration(
+                        color: Colors.blueGrey,
+                        shape: CircleBorder(),
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.settings),
+                        color: Colors.white,
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute<Null>(
+                                builder: (BuildContext context) {
+                                  return SettingsList();
+                                },
+                                fullscreenDialog: true,
+                              ));
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
                 top: 100,
                 right: 20,
                 child: Material(
@@ -293,7 +301,16 @@ class _MapViewState extends State<MapView> {
                       child: IconButton(
                         icon: Icon(Icons.list),
                         color: Colors.white,
-                        onPressed: () => print('btn maps pressed'),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute<Null>(
+                                builder: (BuildContext context) {
+                                  return MapList();
+                                },
+                                fullscreenDialog: true,
+                              ));
+                        },
                       ),
                     ),
                   ),
