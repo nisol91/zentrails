@@ -142,11 +142,10 @@ class _AppStateContainerState extends State<AppStateContainer> {
       if (mounted) {
         setState(() {
           maps = mapsFromFetch;
+          loadedMaps = true;
         });
       }
       print('MAPS!!!!!->${maps[0].name}');
-
-      loadedMaps = true;
     });
   }
 
