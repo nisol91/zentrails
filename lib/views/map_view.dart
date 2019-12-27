@@ -34,6 +34,7 @@ class _MapViewState extends State<MapView> {
   @override
   initState() {
     super.initState();
+    getMaps();
     mapController = MapController();
     zoomLevel = 12;
     position = LatLng(44, 11);
@@ -42,13 +43,15 @@ class _MapViewState extends State<MapView> {
     Future.delayed(new Duration(milliseconds: 500), () {
       _getMyGPSLocationOnMove();
     });
-
-    getMaps();
   }
 
   void getMaps() async {
     print('GETTING=======================');
-    Firestore.instance.collection("maps").snapshots().listen((doc) {
+    Firestore.instance
+        .collection("maps")
+        .where('tag', isEqualTo: 'opentopomap')
+        .snapshots()
+        .listen((doc) {
       mapsFromFetch = doc.documents
           .map((doc) => Maps.fromMap(doc.data, doc.documentID))
           .toList();
@@ -59,6 +62,7 @@ class _MapViewState extends State<MapView> {
         });
       }
       print('MAPS!!!!!->${maps[0].name}');
+
       loadedMaps = true;
     });
   }
@@ -122,6 +126,29 @@ class _MapViewState extends State<MapView> {
     print('Screen position: $screenPosition');
   }
 
+  Widget get _loadingView {
+    return new Scaffold(
+      body: new Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: <Widget>[
+                  Text('loading map...'),
+                  // Image(image: AssetImage('assets/echo_logo.png'))
+                ],
+              ),
+            ),
+            new CircularProgressIndicator(),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget get _youHaveTappedOn {
     return SimpleDialog(
       title: const Text('You have tapped on:'),
@@ -149,221 +176,229 @@ class _MapViewState extends State<MapView> {
       _building = false;
     });
 
-    return Stack(
-      children: <Widget>[
-        FlutterMap(
-          mapController: mapController,
-          options: MapOptions(
-            center: position,
-            interactive: true,
-            zoom: zoomLevel,
-            onPositionChanged: (position, bool) {
-              double lat = position.center.latitude.toDouble();
-              double lng = position.center.longitude.toDouble();
-              double zoom = position.zoom.toDouble();
+    return (!loadedMaps)
+        ? _loadingView
+        : Stack(
+            children: <Widget>[
+              FlutterMap(
+                mapController: mapController,
+                options: MapOptions(
+                  center: position,
+                  interactive: true,
+                  zoom: zoomLevel,
+                  onPositionChanged: (position, bool) {
+                    double lat = position.center.latitude.toDouble();
+                    double lng = position.center.longitude.toDouble();
+                    double zoom = position.zoom.toDouble();
 
-              print(lat);
-              print(lng);
-              print('ZOOOOOOM${position.zoom}');
-              if (!_building) {
-                _onMyPositionChangingOnMapGesture(lat, lng, zoom);
-              }
-            },
-            onTap: (point) {
-              _onMapTapped(point);
-              setState(() {
-                youHaveTappedOnModal = !youHaveTappedOnModal;
-              });
-            },
-          ),
-          layers: [
-            TileLayerOptions(
-              //thunderforest
-              // urlTemplate:
-              // "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}@2x.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
+                    print(lat);
+                    print(lng);
+                    print('ZOOOOOOM${position.zoom}');
+                    if (!_building) {
+                      _onMyPositionChangingOnMapGesture(lat, lng, zoom);
+                    }
+                  },
+                  onTap: (point) {
+                    _onMapTapped(point);
+                    setState(() {
+                      youHaveTappedOnModal = !youHaveTappedOnModal;
+                    });
+                  },
+                ),
+                layers: [
+                  TileLayerOptions(
+                    //select map from DB
+                    urlTemplate: maps[0].url,
+                    subdomains: ['a', 'b', 'c'],
 
-              //cartodb
-              // urlTemplate:
-              //     "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@3x.png",
-              // subdomains: ['a', 'b', 'c'],
+                    //thunderforest
+                    // urlTemplate:
+                    // "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}@2x.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
 
-              //opentopo
-              urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-              subdomains: ['a', 'b', 'c'],
+                    //cartodb
+                    // urlTemplate:
+                    //     "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@3x.png",
+                    // subdomains: ['a', 'b', 'c'],
 
-              //openstreet
-              // urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-              // subdomains: ['a', 'b', 'c'],
+                    //opentopo
+                    // urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+                    // subdomains: ['a', 'b', 'c'],
 
-              //mapbox
-              // urlTemplate: "https://api.tiles.mapbox.com/v4/"
-              //     "{id}/{z}/{x}/{y}@2x.png?access_token={accessToken}",
-              // additionalOptions: {
-              //   'accessToken':
-              //       'pk.eyJ1Ijoibmlzb2w5MSIsImEiOiJjazBjaWRvbTIwMWpmM2hvMDhlYWhhZGV0In0.wyRaVw6FXdw6g3wp3t9FNQ',
-              //   'id': 'mapbox.streets',
-              // },
-            ),
-            MarkerLayerOptions(
-              markers: [
-                Marker(
-                  width: 50.0,
-                  height: 50.0,
-                  point: gpsPosition,
-                  builder: (ctx) => Container(
-                    child: Icon(
-                      Icons.arrow_upward,
-                      color: Colors.red[800],
-                      size: 40,
+                    //openstreet
+                    // urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    // subdomains: ['a', 'b', 'c'],
+
+                    //mapbox
+                    // urlTemplate: "https://api.tiles.mapbox.com/v4/"
+                    //     "{id}/{z}/{x}/{y}@2x.png?access_token={accessToken}",
+                    // additionalOptions: {
+                    //   'accessToken':
+                    //       'pk.eyJ1Ijoibmlzb2w5MSIsImEiOiJjazBjaWRvbTIwMWpmM2hvMDhlYWhhZGV0In0.wyRaVw6FXdw6g3wp3t9FNQ',
+                    //   'id': 'mapbox.streets',
+                    // },
+                  ),
+                  MarkerLayerOptions(
+                    markers: [
+                      Marker(
+                        width: 50.0,
+                        height: 50.0,
+                        point: gpsPosition,
+                        builder: (ctx) => Container(
+                          child: Icon(
+                            Icons.arrow_upward,
+                            color: Colors.red[800],
+                            size: 40,
+                          ),
+                        ),
+                      ),
+                      // Marker(
+                      //   width: 80.0,
+                      //   height: 80.0,
+                      //   point: mapController.center,
+                      //   builder: (ctx) => Container(
+                      //     child: Icon(Icons.home),
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ],
+              ),
+              (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
+              Positioned(
+                  top: 100,
+                  left: 20,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.white,
+                    child: Column(
+                      children: <Widget>[
+                        Text('Lat->${currentLat.toString()}'),
+                        Text('Lng->${currentLng.toString()}'),
+                        Text('Altitude->${currentAlt.toString()}'),
+                        Text('Speed->${currentSpeed.toString()}'),
+                      ],
+                    ),
+                  )),
+              Positioned(
+                top: 100,
+                right: 20,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: Ink(
+                      decoration: const ShapeDecoration(
+                        color: Colors.blueGrey,
+                        shape: CircleBorder(),
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.list),
+                        color: Colors.white,
+                        onPressed: () => print('btn maps pressed'),
+                      ),
                     ),
                   ),
                 ),
-                // Marker(
-                //   width: 80.0,
-                //   height: 80.0,
-                //   point: mapController.center,
-                //   builder: (ctx) => Container(
-                //     child: Icon(Icons.home),
-                //   ),
-                // ),
-              ],
-            ),
-          ],
-        ),
-        (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
-        Positioned(
-            top: 100,
-            left: 20,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.white,
-              child: Column(
-                children: <Widget>[
-                  Text('Lat->${currentLat.toString()}'),
-                  Text('Lng->${currentLng.toString()}'),
-                  Text('Altitude->${currentAlt.toString()}'),
-                  Text('Speed->${currentSpeed.toString()}'),
-                ],
               ),
-            )),
-        Positioned(
-          top: 100,
-          right: 20,
-          child: Material(
-            color: Colors.transparent,
-            child: Center(
-              child: Ink(
-                decoration: const ShapeDecoration(
-                  color: Colors.blueGrey,
-                  shape: CircleBorder(),
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.list),
-                  color: Colors.white,
-                  onPressed: () => print('btn maps pressed'),
-                ),
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 30,
-          left: 20,
-          child: Material(
-            color: Colors.transparent,
-            child: Center(
-              child: Ink(
-                decoration: const ShapeDecoration(
-                  color: Colors.blueGrey,
-                  shape: CircleBorder(),
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.my_location),
-                  color: Colors.white,
-                  onPressed: () {
-                    _getMyGPSLocationOnInit();
-                    _locateMyPosition(currentLat, currentLng, zoomLevel);
+              Positioned(
+                bottom: 30,
+                left: 20,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: Ink(
+                      decoration: const ShapeDecoration(
+                        color: Colors.blueGrey,
+                        shape: CircleBorder(),
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.my_location),
+                        color: Colors.white,
+                        onPressed: () {
+                          _getMyGPSLocationOnInit();
+                          _locateMyPosition(currentLat, currentLng, zoomLevel);
 
-                    print('locate position');
-                  },
+                          print('locate position');
+                        },
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 30,
-          right: 20,
-          child: Material(
-            color: Colors.transparent,
-            child: Center(
-              child: Ink(
-                decoration: const ShapeDecoration(
-                  color: Colors.blueGrey,
-                  shape: CircleBorder(),
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.remove),
-                  color: Colors.white,
-                  onPressed: () {
-                    setState(() {
-                      zoomLevel = zoomLevel - 1;
-                      position = LatLng(mapController.center.latitude,
-                          mapController.center.longitude);
-                    });
-                    mapController.move(position, zoomLevel);
-                    print('zoom out');
-                  },
+              Positioned(
+                bottom: 30,
+                right: 20,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: Ink(
+                      decoration: const ShapeDecoration(
+                        color: Colors.blueGrey,
+                        shape: CircleBorder(),
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.remove),
+                        color: Colors.white,
+                        onPressed: () {
+                          setState(() {
+                            zoomLevel = zoomLevel - 1;
+                            position = LatLng(mapController.center.latitude,
+                                mapController.center.longitude);
+                          });
+                          mapController.move(position, zoomLevel);
+                          print('zoom out');
+                        },
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 100,
-          right: 20,
-          child: Material(
-            color: Colors.transparent,
-            child: Center(
-              child: Ink(
-                decoration: const ShapeDecoration(
-                  color: Colors.blueGrey,
-                  shape: CircleBorder(),
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.add),
-                  color: Colors.white,
-                  onPressed: () {
-                    print('il centro della mia vista:${mapController.center}');
-                    setState(() {
-                      zoomLevel = zoomLevel + 1;
-                    });
-                    setState(() {
-                      position = LatLng(
-                          mapController.center.latitude + 0.00000001,
-                          mapController.center.longitude + 0.00000001);
-                    });
-                    mapController.move(position, zoomLevel);
-                    //questo fix serve perchè pare che la mappa, una volta fatto lo zoom in
-                    //col mapcontroller, non ricarichi finche non si sposta.
-                    //allora gli faccio cambiare posizione appena dopo aver fatto zoom in
-                    new Future.delayed(new Duration(milliseconds: 10), () {
-                      setState(() {
-                        position = LatLng(
-                            mapController.center.latitude - 0.00000001,
-                            mapController.center.longitude - 0.00000001);
-                      });
-                      mapController.move(position, zoomLevel);
-                    });
+              Positioned(
+                bottom: 100,
+                right: 20,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: Ink(
+                      decoration: const ShapeDecoration(
+                        color: Colors.blueGrey,
+                        shape: CircleBorder(),
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.add),
+                        color: Colors.white,
+                        onPressed: () {
+                          print(
+                              'il centro della mia vista:${mapController.center}');
+                          setState(() {
+                            zoomLevel = zoomLevel + 1;
+                          });
+                          setState(() {
+                            position = LatLng(
+                                mapController.center.latitude + 0.00000001,
+                                mapController.center.longitude + 0.00000001);
+                          });
+                          mapController.move(position, zoomLevel);
+                          //questo fix serve perchè pare che la mappa, una volta fatto lo zoom in
+                          //col mapcontroller, non ricarichi finche non si sposta.
+                          //allora gli faccio cambiare posizione appena dopo aver fatto zoom in
+                          new Future.delayed(new Duration(milliseconds: 10),
+                              () {
+                            setState(() {
+                              position = LatLng(
+                                  mapController.center.latitude - 0.00000001,
+                                  mapController.center.longitude - 0.00000001);
+                            });
+                            mapController.move(position, zoomLevel);
+                          });
 
-                    print('zoom in');
-                  },
+                          print('zoom in');
+                        },
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ),
-      ],
-    );
+            ],
+          );
   }
 }

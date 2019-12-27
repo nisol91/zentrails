@@ -2,7 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Maps {
   String id;
+  String tag;
+
   String name;
+  String url;
   String description;
   String img;
   String mapsType;
@@ -10,7 +13,9 @@ class Maps {
 
   Maps({
     this.id,
+    this.tag,
     this.name,
+    this.url,
     this.description,
     this.img,
     this.mapsType,
@@ -19,7 +24,9 @@ class Maps {
 
   Maps.fromMap(Map snapshot, String id)
       : id = id ?? '',
+        tag = snapshot['tag'] ?? '',
         name = snapshot['name'] ?? '',
+        url = snapshot['url'] ?? '',
         description = snapshot['description'] ?? '',
         img = snapshot['img'] ?? '',
         mapsType = snapshot['mapsType'] ?? '',
@@ -27,7 +34,9 @@ class Maps {
 
   toJson() {
     return {
+      "tag": tag,
       "name": name,
+      "url": url,
       "description": description,
       "img": img,
       "mapsType": mapsType,
