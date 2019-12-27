@@ -281,6 +281,8 @@ class _MapViewState extends State<MapView> {
                   onPressed: () {
                     setState(() {
                       zoomLevel = zoomLevel - 1;
+                      position = LatLng(mapController.center.latitude,
+                          mapController.center.longitude);
                     });
                     mapController.move(position, zoomLevel);
                     print('zoom out');
@@ -309,6 +311,11 @@ class _MapViewState extends State<MapView> {
                     setState(() {
                       zoomLevel = zoomLevel + 1;
                     });
+                    setState(() {
+                      position = LatLng(
+                          mapController.center.latitude + 0.00000001,
+                          mapController.center.longitude + 0.00000001);
+                    });
                     mapController.move(position, zoomLevel);
                     //questo fix serve perchè pare che la mappa, una volta fatto lo zoom in
                     //col mapcontroller, non ricarichi finche non si sposta.
@@ -316,8 +323,8 @@ class _MapViewState extends State<MapView> {
                     new Future.delayed(new Duration(milliseconds: 10), () {
                       setState(() {
                         position = LatLng(
-                            mapController.center.latitude + 0.00000001,
-                            mapController.center.longitude + 0.00000001);
+                            mapController.center.latitude - 0.00000001,
+                            mapController.center.longitude - 0.00000001);
                       });
                       mapController.move(position, zoomLevel);
                     });
