@@ -31,18 +31,28 @@ class _MapViewState extends State<MapView> {
 
   var location = new Location();
 
+  List points = <LatLng>[
+    LatLng(44, 10),
+    LatLng(44.2, 10.2),
+    LatLng(44.3, 10.3),
+    LatLng(44.5, 10.4),
+    LatLng(44.7, 10.5),
+    LatLng(44.6, 10.6),
+  ];
+
   @override
   initState() {
     super.initState();
 
     mapController = MapController();
     zoomLevel = 8;
-    position = LatLng(44, 11);
+    position = LatLng(46.0835, 6.9887);
     //dopo che la mappa si è caricata, ricerco la posizione
     Future.delayed(new Duration(milliseconds: 500), () {
       //(in alternativa plugin geolocation)
       _getMyGPSLocationOnInit();
       _getMyGPSLocationOnMove();
+      _getTrackPoints();
     });
   }
 
@@ -99,6 +109,38 @@ class _MapViewState extends State<MapView> {
       zoomLevel = zoom;
     });
     print('my current map position is -> lat${lat}, lng${lng}');
+  }
+
+  void _getTrackPoints() {
+    Firestore.instance
+        .collection("users")
+        .document(AppStateContainer.of(context).id)
+        .collection('Tracks')
+        .document('6UqAowqXk9Ua282FpVWq')
+        .collection('Points')
+        .getDocuments()
+        .then((doc) {
+      var punti = doc.documents.toList();
+
+      print('================');
+      punti.forEach((el) {
+        print('quota punto-->${el.data['elev'].toString()}');
+        print(
+            'coord punto-->${el.data['lat'].toString()} | ${el.data['lng'].toString()}');
+      });
+
+      print('================');
+      List fetchedPoints = <LatLng>[];
+      punti.forEach((el) {
+        fetchedPoints.add(LatLng(el.data['lat'], el.data['lng']));
+      });
+      print('LISTA PUNTI ---- >${fetchedPoints}');
+      print('LISTA PUNTI ORIGINALE ---- >${points}');
+
+      setState(() {
+        points = fetchedPoints;
+      });
+    });
   }
 
   _onMapTapped(LatLng point) {
@@ -225,6 +267,14 @@ class _MapViewState extends State<MapView> {
                     //       'pk.eyJ1Ijoibmlzb2w5MSIsImEiOiJjazBjaWRvbTIwMWpmM2hvMDhlYWhhZGV0In0.wyRaVw6FXdw6g3wp3t9FNQ',
                     //   'id': 'mapbox.streets',
                     // },
+                  ),
+                  PolylineLayerOptions(
+                    polylines: [
+                      Polyline(
+                          points: points,
+                          strokeWidth: 4.0,
+                          color: Colors.purple),
+                    ],
                   ),
                   MarkerLayerOptions(
                     markers: [
