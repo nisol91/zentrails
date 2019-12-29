@@ -27,6 +27,7 @@ class _MapViewState extends State<MapView> {
   double currentLng;
   double currentAlt;
   double currentSpeed;
+  double currentHeading;
 
   var location = new Location();
 
@@ -35,7 +36,7 @@ class _MapViewState extends State<MapView> {
     super.initState();
 
     mapController = MapController();
-    zoomLevel = 12;
+    zoomLevel = 8;
     position = LatLng(44, 11);
     //dopo che la mappa si è caricata, ricerco la posizione
     Future.delayed(new Duration(milliseconds: 500), () {
@@ -51,13 +52,14 @@ class _MapViewState extends State<MapView> {
 
   void _getMyGPSLocationOnInit() async {
     location.changeSettings(
-        accuracy: LocationAccuracy.HIGH, interval: 10, distanceFilter: 0);
+        accuracy: LocationAccuracy.HIGH, interval: 1000, distanceFilter: 3);
     currentLocation = await location.getLocation();
     setState(() {
       currentAlt = currentLocation.altitude;
       currentLat = currentLocation.latitude;
       currentLng = currentLocation.longitude;
       currentSpeed = currentLocation.speed;
+      currentHeading = currentLocation.heading;
       gpsPosition = LatLng(currentLat, currentLng);
     });
     //mi va subito alla positione aggiornandola se c è
@@ -75,7 +77,8 @@ class _MapViewState extends State<MapView> {
       print(currentLocation.longitude);
       print('GPS LOCATION CHIAMATO DALLO STREAM');
 
-      //mi va subito alla positione aggiornandola se c è
+      //mi va subito alla positione aggiornandola se c è.
+      //per questioni di usabilità, non ha senso chiamarla.
       // _locateMyPosition(currentLat, currentLng, zoomLevel);
 
       setState(() {
@@ -84,6 +87,7 @@ class _MapViewState extends State<MapView> {
         currentLat = currentLocation.latitude;
         currentLng = currentLocation.longitude;
         currentSpeed = currentLocation.speed;
+        currentHeading = currentLocation.heading;
         gpsPosition = LatLng(currentLat, currentLng);
       });
     });
@@ -161,11 +165,11 @@ class _MapViewState extends State<MapView> {
       _building = false;
     });
 
-    return (!container.loadedMaps)
-        ? _loadingView
-        : Stack(
-            children: <Widget>[
-              FlutterMap(
+    return Stack(
+      children: <Widget>[
+        (!container.loadedMaps)
+            ? _loadingView
+            : FlutterMap(
                 mapController: mapController,
                 options: MapOptions(
                   center: position,
@@ -248,23 +252,33 @@ class _MapViewState extends State<MapView> {
                   ),
                 ],
               ),
-              (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
-              Positioned(
-                  top: 100,
-                  left: 20,
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    color: Colors.white,
-                    child: Column(
-                      children: <Widget>[
-                        Text('Lat->${currentLat.toString()}'),
-                        Text('Lng->${currentLng.toString()}'),
-                        Text('Altitude->${currentAlt.toString()}'),
-                        Text('Speed->${currentSpeed.toString()}'),
-                      ],
-                    ),
-                  )),
-              Positioned(
+        (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
+        Positioned(
+            top: 100,
+            left: 20,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.white,
+              child: Column(
+                children: <Widget>[
+                  Text('Lat->${currentLat.toString()}'),
+                  Text('Lng->${currentLng.toString()}'),
+                  Text('Altitude->${currentAlt.toString()}'),
+                  Text('Speed->${currentSpeed.toString()}'),
+                  Text('Heading dir->${currentHeading.toString()}'),
+                  Text('ERROR->${container.errorFetchMaps.toString()}'),
+                  Container(
+                    width: 200,
+                    height: 100,
+                    color: Colors.grey,
+                    child: Text('Speed->${container.maps[0].url.toString()}'),
+                  )
+                ],
+              ),
+            )),
+        (container.email == '')
+            ? Container()
+            : Positioned(
                 top: 160,
                 right: 20,
                 child: Material(
@@ -293,7 +307,9 @@ class _MapViewState extends State<MapView> {
                   ),
                 ),
               ),
-              Positioned(
+        (container.email == '')
+            ? Container()
+            : Positioned(
                 top: 100,
                 right: 20,
                 child: Material(
@@ -317,107 +333,105 @@ class _MapViewState extends State<MapView> {
                   ),
                 ),
               ),
-              Positioned(
-                bottom: 30,
-                left: 20,
-                child: Material(
-                  color: Colors.transparent,
-                  child: Center(
-                    child: Ink(
-                      decoration: const ShapeDecoration(
-                        color: Colors.blueGrey,
-                        shape: CircleBorder(),
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.my_location),
-                        color: Colors.white,
-                        onPressed: () {
-                          _getMyGPSLocationOnInit();
-                          _locateMyPosition(currentLat, currentLng, zoomLevel);
+        Positioned(
+          bottom: 30,
+          left: 20,
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: Ink(
+                decoration: const ShapeDecoration(
+                  color: Colors.blueGrey,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.my_location),
+                  color: Colors.white,
+                  onPressed: () {
+                    _getMyGPSLocationOnInit();
+                    _locateMyPosition(currentLat, currentLng, zoomLevel);
 
-                          print('locate position');
-                        },
-                      ),
-                    ),
-                  ),
+                    print('locate position');
+                  },
                 ),
               ),
-              Positioned(
-                bottom: 30,
-                right: 20,
-                child: Material(
-                  color: Colors.transparent,
-                  child: Center(
-                    child: Ink(
-                      decoration: const ShapeDecoration(
-                        color: Colors.blueGrey,
-                        shape: CircleBorder(),
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.remove),
-                        color: Colors.white,
-                        onPressed: () {
-                          setState(() {
-                            zoomLevel = zoomLevel - 1;
-                            position = LatLng(mapController.center.latitude,
-                                mapController.center.longitude);
-                          });
-                          mapController.move(position, zoomLevel);
-                          print('zoom out');
-                        },
-                      ),
-                    ),
-                  ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 30,
+          right: 20,
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: Ink(
+                decoration: const ShapeDecoration(
+                  color: Colors.blueGrey,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.remove),
+                  color: Colors.white,
+                  onPressed: () {
+                    setState(() {
+                      zoomLevel = zoomLevel - 1;
+                      position = LatLng(mapController.center.latitude,
+                          mapController.center.longitude);
+                    });
+                    mapController.move(position, zoomLevel);
+                    print('zoom out');
+                  },
                 ),
               ),
-              Positioned(
-                bottom: 100,
-                right: 20,
-                child: Material(
-                  color: Colors.transparent,
-                  child: Center(
-                    child: Ink(
-                      decoration: const ShapeDecoration(
-                        color: Colors.blueGrey,
-                        shape: CircleBorder(),
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.add),
-                        color: Colors.white,
-                        onPressed: () {
-                          print(
-                              'il centro della mia vista:${mapController.center}');
-                          setState(() {
-                            zoomLevel = zoomLevel + 1;
-                          });
-                          setState(() {
-                            position = LatLng(
-                                mapController.center.latitude + 0.00000001,
-                                mapController.center.longitude + 0.00000001);
-                          });
-                          mapController.move(position, zoomLevel);
-                          //questo fix serve perchè pare che la mappa, una volta fatto lo zoom in
-                          //col mapcontroller, non ricarichi finche non si sposta.
-                          //allora gli faccio cambiare posizione appena dopo aver fatto zoom in
-                          new Future.delayed(new Duration(milliseconds: 10),
-                              () {
-                            setState(() {
-                              position = LatLng(
-                                  mapController.center.latitude - 0.00000001,
-                                  mapController.center.longitude - 0.00000001);
-                            });
-                            mapController.move(position, zoomLevel);
-                          });
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 100,
+          right: 20,
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: Ink(
+                decoration: const ShapeDecoration(
+                  color: Colors.blueGrey,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.add),
+                  color: Colors.white,
+                  onPressed: () {
+                    print('il centro della mia vista:${mapController.center}');
+                    setState(() {
+                      zoomLevel = zoomLevel + 1;
+                    });
+                    setState(() {
+                      position = LatLng(
+                          mapController.center.latitude + 0.00000001,
+                          mapController.center.longitude + 0.00000001);
+                    });
+                    mapController.move(position, zoomLevel);
+                    //questo fix serve perchè pare che la mappa, una volta fatto lo zoom in
+                    //col mapcontroller, non ricarichi finche non si sposta.
+                    //allora gli faccio cambiare posizione appena dopo aver fatto zoom in
+                    new Future.delayed(new Duration(milliseconds: 10), () {
+                      setState(() {
+                        position = LatLng(
+                            mapController.center.latitude - 0.00000001,
+                            mapController.center.longitude - 0.00000001);
+                      });
+                      mapController.move(position, zoomLevel);
+                    });
 
-                          print('zoom in');
-                        },
-                      ),
-                    ),
-                  ),
+                    print('zoom in');
+                  },
                 ),
               ),
-              (container.showMapListPage) ? MapListPage() : Container(),
-            ],
-          );
+            ),
+          ),
+        ),
+        (container.showMapListPage) ? MapListPage() : Container(),
+      ],
+    );
   }
 }
