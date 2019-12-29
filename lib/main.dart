@@ -200,8 +200,8 @@ class _MyHomePageState extends State<MyHomePage>
   //====bottom navbar control
   final List<Widget> _bottomBarTabs = [
     MapView(),
-    ProfilePage(),
-    ProfilePage(),
+    Text('tab'),
+    Text('tab'),
     ProfilePage(),
   ];
   Widget changeBottomBarTab(int index) {
@@ -261,39 +261,43 @@ class _MyHomePageState extends State<MyHomePage>
             ),
             //questo modo di fare l'appbar è diverso da quello convenzionale:
             // mi permette di fare un appbar trasparente.
-            body: Stack(
-              children: <Widget>[
-                //l'indexedstack, al posto di metterci direttamente i widget con: _bottomBarTabs[_currentIndex],
-                // mi permette di far si che non si ricarichi nulla al cambio di tab
-                IndexedStack(
-                  index: _currentIndex,
-                  children: <Widget>[
-                    _bottomBarTabs[0],
-                    _bottomBarTabs[1],
-                    _bottomBarTabs[2],
-                    _bottomBarTabs[3],
-                  ],
-                ),
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: AppBar(
-                    title: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text('ZenTrails'),
-                    ),
-                    backgroundColor: tema.primaryColor.withOpacity(.5),
-                    actions: <Widget>[
-                      // IconButton(
-                      //   icon: Icon(Icons.account_box),
-                      //   onPressed: _logInPage,
-                      //   color: tema.accentColor,
-                      // ),
+            body: SafeArea(
+              bottom: false,
+              top: false,
+              child: Stack(
+                children: <Widget>[
+                  //l'indexedstack, al posto di metterci direttamente i widget con: _bottomBarTabs[_currentIndex],
+                  // mi permette di far si che non si ricarichi nulla al cambio di tab
+                  IndexedStack(
+                    index: _currentIndex,
+                    children: <Widget>[
+                      _bottomBarTabs[0],
+                      _bottomBarTabs[1],
+                      _bottomBarTabs[2],
+                      _bottomBarTabs[3],
                     ],
                   ),
-                )
-              ],
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: AppBar(
+                      title: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text('ZenTrails'),
+                      ),
+                      backgroundColor: tema.primaryColor.withOpacity(.5),
+                      actions: <Widget>[
+                        // IconButton(
+                        //   icon: Icon(Icons.account_box),
+                        //   onPressed: _logInPage,
+                        //   color: tema.accentColor,
+                        // ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
           )
         : _loadingView;
