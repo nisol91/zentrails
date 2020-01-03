@@ -62,7 +62,7 @@ class _MapViewState extends State<MapView> {
 
   void _getMyGPSLocationOnInit() async {
     location.changeSettings(
-        accuracy: LocationAccuracy.HIGH, interval: 1000, distanceFilter: 3);
+        accuracy: LocationAccuracy.HIGH, interval: 2000, distanceFilter: 3);
     currentLocation = await location.getLocation();
     setState(() {
       currentAlt = currentLocation.altitude;
