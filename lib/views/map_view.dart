@@ -29,6 +29,8 @@ class _MapViewState extends State<MapView> {
   double currentSpeed;
   double currentHeading;
 
+  bool dataModalVisible = true;
+
   var location = new Location();
 
   List points = <LatLng>[
@@ -53,6 +55,12 @@ class _MapViewState extends State<MapView> {
       _getMyGPSLocationOnInit();
       _getMyGPSLocationOnMove();
       _getTrackPoints();
+    });
+  }
+
+  void showModal() {
+    setState(() {
+      dataModalVisible = !dataModalVisible;
     });
   }
 
@@ -304,28 +312,49 @@ class _MapViewState extends State<MapView> {
               ),
         (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
         Positioned(
-            top: 100,
-            left: 20,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.white,
-              child: Column(
-                children: <Widget>[
-                  Text('Lat->${currentLat.toString()}'),
-                  Text('Lng->${currentLng.toString()}'),
-                  Text('Altitude->${currentAlt.toString()}'),
-                  Text('Speed->${currentSpeed.toString()}'),
-                  Text('Heading dir->${currentHeading.toString()}'),
-                  Text('ERROR->${container.errorFetchMaps.toString()}'),
-                  Container(
-                    width: 200,
-                    height: 100,
-                    color: Colors.grey,
-                    child: Text('Speed->${container.maps[0].url.toString()}'),
-                  )
-                ],
+          top: 100,
+          left: 5,
+          child: Material(
+            child: InkWell(
+              onTap: () {
+                print('ok');
+                showModal();
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: (dataModalVisible)
+                    ? Icon(Icons.close)
+                    : Icon(Icons.add_circle_outline),
               ),
-            )),
+            ),
+          ),
+        ),
+        Visibility(
+          visible: dataModalVisible,
+          child: Positioned(
+              top: 100,
+              left: 50,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                color: Colors.white,
+                child: Column(
+                  children: <Widget>[
+                    Text('Lat->${currentLat.toString()}'),
+                    Text('Lng->${currentLng.toString()}'),
+                    Text('Altitude->${currentAlt.toString()}'),
+                    Text('Speed->${currentSpeed.toString()}'),
+                    Text('Heading dir->${currentHeading.toString()}'),
+                    Text('ERROR->${container.errorFetchMaps.toString()}'),
+                    Container(
+                      width: 200,
+                      height: 100,
+                      color: Colors.grey,
+                      child: Text('Speed->${container.maps[0].url.toString()}'),
+                    )
+                  ],
+                ),
+              )),
+        ),
         (container.email == '')
             ? Container()
             : Positioned(
