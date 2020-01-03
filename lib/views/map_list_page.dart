@@ -49,7 +49,6 @@ class MapList extends StatelessWidget {
             icon: Icon(Icons.close),
             onPressed: () {
               container.closeMapList();
-              print('dioca');
             },
             // color: tema.accentColor,
           ),
