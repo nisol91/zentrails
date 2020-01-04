@@ -42,6 +42,8 @@ class _MapViewState extends State<MapView> {
     LatLng(44.6, 10.6),
   ];
 
+  List trackPoints = <LatLng>[];
+
   @override
   initState() {
     super.initState();
@@ -93,11 +95,15 @@ class _MapViewState extends State<MapView> {
     location.onLocationChanged().listen((LocationData currentLocation) {
       print(currentLocation.latitude);
       print(currentLocation.longitude);
+
       print('GPS LOCATION CHIAMATO DALLO STREAM');
 
       //mi va subito alla positione aggiornandola se c è.
       //per questioni di usabilità, non ha senso chiamarla.
       // _locateMyPosition(currentLat, currentLng, zoomLevel);
+
+      //aggiungo il nuovo punto alla traccia
+      _setTrackPoints(currentLocation.latitude, currentLocation.longitude);
 
       setState(() {
         position = LatLng(currentLocation.latitude, currentLocation.longitude);
@@ -117,6 +123,11 @@ class _MapViewState extends State<MapView> {
       zoomLevel = zoom;
     });
     print('my current map position is -> lat${lat}, lng${lng}');
+  }
+
+  void _setTrackPoints(double lat, double lng) {
+    trackPoints.add(LatLng(lat, lng));
+    print('LISTA PUNTI?????? ---- >${trackPoints}');
   }
 
   void _getTrackPoints() {
@@ -279,7 +290,7 @@ class _MapViewState extends State<MapView> {
                   PolylineLayerOptions(
                     polylines: [
                       Polyline(
-                          points: points,
+                          points: trackPoints,
                           strokeWidth: 4.0,
                           color: Colors.purple),
                     ],
@@ -292,9 +303,9 @@ class _MapViewState extends State<MapView> {
                         point: gpsPosition,
                         builder: (ctx) => Container(
                           child: Icon(
-                            Icons.arrow_upward,
+                            Icons.add_circle_outline,
                             color: Colors.red[800],
-                            size: 40,
+                            size: 20,
                           ),
                         ),
                       ),
