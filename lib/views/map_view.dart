@@ -291,7 +291,7 @@ class _MapViewState extends State<MapView> {
                     polylines: [
                       Polyline(
                           points: trackPoints,
-                          strokeWidth: 4.0,
+                          strokeWidth: 8.0,
                           color: Colors.purple),
                     ],
                   ),
