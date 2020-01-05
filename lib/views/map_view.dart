@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -9,16 +11,23 @@ import '../models/maps_model.dart';
 import 'settings_page.dart';
 import '../views/settings_page.dart';
 import '../views/map_list_page.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'package:flutter_map/plugin_api.dart';
+import '../plugins/scale_layer_plugin_options.dart';
 
 class MapView extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _MapViewState();
 }
 
-class _MapViewState extends State<MapView> {
+class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   double zoomLevel;
   LatLng position;
   LatLng gpsPosition;
+
+  ScreenshotController screenshotController = ScreenshotController();
 
   MapController mapController;
   LocationData currentLocation;
@@ -31,6 +40,8 @@ class _MapViewState extends State<MapView> {
 
   bool dataModalVisible = true;
   bool record = false;
+
+  File _mapScreenshot = null;
 
   var location = new Location();
 
@@ -65,6 +76,59 @@ class _MapViewState extends State<MapView> {
     setState(() {
       dataModalVisible = !dataModalVisible;
     });
+  }
+
+  Future<String> takeScreenshot() async {
+    final directory = (await getApplicationDocumentsDirectory())
+        .path; //from path_provide package
+    String fileName = DateTime.now().toIso8601String();
+    String path = '$directory/$fileName.png';
+    screenshotController.capture(path: path).then((File image) {
+      print('screenshot done');
+      print(image);
+
+      //Capture Done
+      setState(() {
+        _mapScreenshot = image;
+      });
+    }).catchError((onError) {
+      print(onError);
+    });
+    return path;
+  }
+
+  void _animatedMapMove(LatLng destLocation, double destZoom) {
+    // Create some tweens. These serve to split up the transition from one location to another.
+    // In our case, we want to split the transition be<tween> our current map center and the destination.
+    final _latTween = Tween<double>(
+        begin: mapController.center.latitude, end: destLocation.latitude);
+    final _lngTween = Tween<double>(
+        begin: mapController.center.longitude, end: destLocation.longitude);
+    final _zoomTween = Tween<double>(begin: mapController.zoom, end: destZoom);
+
+    // Create a animation controller that has a duration and a TickerProvider.
+    var controller = AnimationController(
+        duration: const Duration(milliseconds: 500), vsync: this);
+    // The animation determines what path the animation will take. You can try different Curves values, although I found
+    // fastOutSlowIn to be my favorite.
+    Animation<double> animation =
+        CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
+
+    controller.addListener(() {
+      mapController.move(
+          LatLng(_latTween.evaluate(animation), _lngTween.evaluate(animation)),
+          _zoomTween.evaluate(animation));
+    });
+
+    animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.dispose();
+      } else if (status == AnimationStatus.dismissed) {
+        controller.dispose();
+      }
+    });
+
+    controller.forward();
   }
 
   void _locateMyPosition(lat, lng, zoom) {
@@ -233,96 +297,111 @@ class _MapViewState extends State<MapView> {
       children: <Widget>[
         (!container.loadedMaps)
             ? _loadingView
-            : FlutterMap(
-                mapController: mapController,
-                options: MapOptions(
-                  center: position,
-                  interactive: true,
-                  zoom: zoomLevel,
-                  onPositionChanged: (position, bool) {
-                    double lat = position.center.latitude.toDouble();
-                    double lng = position.center.longitude.toDouble();
-                    double zoom = position.zoom.toDouble();
-
-                    print(lat);
-                    print(lng);
-                    print('ZOOOOOOM${position.zoom}');
-                    if (!_building) {
-                      _onMyPositionChangingOnMapGesture(lat, lng, zoom);
-                    }
-                  },
-                  onTap: (point) {
-                    _onMapTapped(point);
-                    setState(() {
-                      youHaveTappedOnModal = !youHaveTappedOnModal;
-                    });
-                  },
-                ),
-                layers: [
-                  TileLayerOptions(
-                    //select map from DB
-                    urlTemplate: container.maps[0].url,
-                    subdomains: ['a', 'b', 'c'],
-
-                    //thunderforest
-                    // urlTemplate:
-                    // "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}@2x.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
-
-                    //cartodb
-                    // urlTemplate:
-                    //     "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@3x.png",
-                    // subdomains: ['a', 'b', 'c'],
-
-                    //opentopo
-                    // urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-                    // subdomains: ['a', 'b', 'c'],
-
-                    //openstreet
-                    // urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    // subdomains: ['a', 'b', 'c'],
-
-                    //mapbox
-                    // urlTemplate: "https://api.tiles.mapbox.com/v4/"
-                    //     "{id}/{z}/{x}/{y}@2x.png?access_token={accessToken}",
-                    // additionalOptions: {
-                    //   'accessToken':
-                    //       'pk.eyJ1Ijoibmlzb2w5MSIsImEiOiJjazBjaWRvbTIwMWpmM2hvMDhlYWhhZGV0In0.wyRaVw6FXdw6g3wp3t9FNQ',
-                    //   'id': 'mapbox.streets',
-                    // },
-                  ),
-                  PolylineLayerOptions(
-                    polylines: [
-                      Polyline(
-                          points: trackPoints,
-                          strokeWidth: 5.0,
-                          color: Colors.purple),
+            : Screenshot(
+                controller: screenshotController,
+                child: FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                    plugins: [
+                      ScaleLayerPlugin(),
                     ],
+                    center: position,
+                    interactive: true,
+                    zoom: zoomLevel,
+                    onPositionChanged: (position, bool) {
+                      double lat = position.center.latitude.toDouble();
+                      double lng = position.center.longitude.toDouble();
+                      double zoom = position.zoom.toDouble();
+
+                      print(lat);
+                      print(lng);
+                      print('ZOOOOOOM${position.zoom}');
+                      if (!_building) {
+                        _onMyPositionChangingOnMapGesture(lat, lng, zoom);
+                      }
+                    },
+                    onTap: (point) {
+                      _onMapTapped(point);
+                      setState(() {
+                        youHaveTappedOnModal = !youHaveTappedOnModal;
+                      });
+                    },
                   ),
-                  MarkerLayerOptions(
-                    markers: [
-                      Marker(
-                        width: 50.0,
-                        height: 50.0,
-                        point: gpsPosition,
-                        builder: (ctx) => Container(
-                          child: Icon(
-                            Icons.add_circle_outline,
-                            color: Colors.red[800],
-                            size: 20,
+                  layers: [
+                    TileLayerOptions(
+                      //select map from DB
+                      urlTemplate: container.maps[0].url,
+                      subdomains: ['a', 'b', 'c'],
+                      // placeholderImage: AssetImage(takeScreenshot()),
+
+                      //thunderforest
+                      // urlTemplate:
+                      // "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}@2x.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527",
+
+                      //cartodb
+                      // urlTemplate:
+                      //     "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@3x.png",
+                      // subdomains: ['a', 'b', 'c'],
+
+                      //opentopo
+                      // urlTemplate: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+                      // subdomains: ['a', 'b', 'c'],
+
+                      //openstreet
+                      // urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                      // subdomains: ['a', 'b', 'c'],
+
+                      //mapbox
+                      // urlTemplate: "https://api.tiles.mapbox.com/v4/"
+                      //     "{id}/{z}/{x}/{y}@2x.png?access_token={accessToken}",
+                      // additionalOptions: {
+                      //   'accessToken':
+                      //       'pk.eyJ1Ijoibmlzb2w5MSIsImEiOiJjazBjaWRvbTIwMWpmM2hvMDhlYWhhZGV0In0.wyRaVw6FXdw6g3wp3t9FNQ',
+                      //   'id': 'mapbox.streets',
+                      // },
+                    ),
+                    ScaleLayerPluginOption(
+                      lineColor: Colors.black,
+                      lineWidth: 2,
+                      textStyle: TextStyle(color: Colors.black, fontSize: 12),
+                      padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).size.width * 1.7,
+                          left: MediaQuery.of(context).size.width * 0.6),
+                    ),
+                    PolylineLayerOptions(
+                      polylines: [
+                        Polyline(
+                            points: trackPoints,
+                            strokeWidth: 5.0,
+                            color: Colors.purple),
+                      ],
+                    ),
+                    MarkerLayerOptions(
+                      markers: [
+                        Marker(
+                          width: 50.0,
+                          height: 50.0,
+                          point: gpsPosition,
+                          builder: (ctx) => Container(
+                            child: Icon(
+                              Icons.add_circle_outline,
+                              color: Colors.red[800],
+                              size: 20,
+                            ),
                           ),
                         ),
-                      ),
-                      // Marker(
-                      //   width: 80.0,
-                      //   height: 80.0,
-                      //   point: mapController.center,
-                      //   builder: (ctx) => Container(
-                      //     child: Icon(Icons.home),
-                      //   ),
-                      // ),
-                    ],
-                  ),
-                ],
+                        // Marker(
+                        //   width: 80.0,
+                        //   height: 80.0,
+                        //   point: mapController.center,
+                        //   builder: (ctx) => Container(
+                        //     child: Icon(Icons.home),
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
         (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
         Positioned(
@@ -471,8 +550,8 @@ class _MapViewState extends State<MapView> {
                   color: Colors.white,
                   onPressed: () {
                     _getMyGPSLocationOnInit();
-                    _locateMyPosition(currentLat, currentLng, zoomLevel);
-
+                    // _locateMyPosition(currentLat, currentLng, zoomLevel);
+                    _animatedMapMove(LatLng(currentLat, currentLng), zoomLevel);
                     print('locate position');
                   },
                 ),
@@ -523,6 +602,8 @@ class _MapViewState extends State<MapView> {
                   icon: Icon(Icons.add),
                   color: Colors.white,
                   onPressed: () {
+                    _mapScreenshot = null;
+                    takeScreenshot();
                     print('il centro della mia vista:${mapController.center}');
                     setState(() {
                       zoomLevel = zoomLevel + 1;
