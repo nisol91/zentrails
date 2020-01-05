@@ -30,6 +30,7 @@ class _MapViewState extends State<MapView> {
   double currentHeading;
 
   bool dataModalVisible = true;
+  bool record = false;
 
   var location = new Location();
 
@@ -103,7 +104,9 @@ class _MapViewState extends State<MapView> {
       // _locateMyPosition(currentLat, currentLng, zoomLevel);
 
       //aggiungo il nuovo punto alla traccia
-      _setTrackPoints(currentLocation.latitude, currentLocation.longitude);
+      if (record) {
+        _setTrackPoints(currentLocation.latitude, currentLocation.longitude);
+      }
 
       setState(() {
         position = LatLng(currentLocation.latitude, currentLocation.longitude);
@@ -291,7 +294,7 @@ class _MapViewState extends State<MapView> {
                     polylines: [
                       Polyline(
                           points: trackPoints,
-                          strokeWidth: 8.0,
+                          strokeWidth: 5.0,
                           color: Colors.purple),
                     ],
                   ),
@@ -423,6 +426,35 @@ class _MapViewState extends State<MapView> {
                   ),
                 ),
               ),
+        Positioned(
+          width: 30,
+          height: 30,
+          bottom: 30,
+          left: 100,
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: Ink(
+                decoration: const ShapeDecoration(
+                  color: Colors.red,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    (record) ? Icons.stop : Icons.play_arrow,
+                    size: 15,
+                  ),
+                  color: Colors.white,
+                  onPressed: () {
+                    setState(() {
+                      record = !record;
+                    });
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
         Positioned(
           bottom: 30,
           left: 20,
