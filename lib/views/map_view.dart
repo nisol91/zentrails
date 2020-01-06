@@ -41,7 +41,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   bool dataModalVisible = true;
   bool record = false;
 
-  File _mapScreenshot = null;
+  File _mapScreenshot;
 
   var location = new Location();
 
@@ -78,7 +78,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     });
   }
 
-  Future<String> takeScreenshot() async {
+  void takeScreenshot() async {
     final directory = (await getApplicationDocumentsDirectory())
         .path; //from path_provide package
     String fileName = DateTime.now().toIso8601String();
@@ -94,7 +94,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     }).catchError((onError) {
       print(onError);
     });
-    return path;
   }
 
   void _animatedMapMove(LatLng destLocation, double destZoom) {
@@ -332,7 +331,16 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                       //select map from DB
                       urlTemplate: container.maps[0].url,
                       subdomains: ['a', 'b', 'c'],
-                      // placeholderImage: AssetImage(takeScreenshot()),
+
+                      //la placeholder image purtroppo non può avere le dimensioni di tutto lo schermo
+                      // placeholderImage: (_mapScreenshot != null)
+                      //     ? FileImage(_mapScreenshot, scale: 100)
+                      //     : NetworkImage(
+                      //         'https://www.ambientiroma.it/wp-content/uploads/2017/07/grey-04.jpg'),
+
+                      //forse la tile size potrebbe gestire le dimensioni degli elementi sullo schermo
+                      //il problema è che poi la posizione si sballa.
+                      // tileSize: 200
 
                       //thunderforest
                       // urlTemplate:
@@ -602,8 +610,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                   icon: Icon(Icons.add),
                   color: Colors.white,
                   onPressed: () {
-                    _mapScreenshot = null;
-                    takeScreenshot();
                     print('il centro della mia vista:${mapController.center}');
                     setState(() {
                       zoomLevel = zoomLevel + 1;
@@ -625,7 +631,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                       });
                       mapController.move(position, zoomLevel);
                     });
-
                     print('zoom in');
                   },
                 ),
