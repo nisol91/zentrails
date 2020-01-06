@@ -57,6 +57,12 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   List trackPoints = <List>[];
   List trackPointsLatLng = <LatLng>[];
 
+  //mi serve per fare differenze tra angoli per la heading
+  List headingList = <double>[
+    0.0,
+    0.0,
+  ];
+
   double numPoints = 0;
   double velSum = 0;
   double elevSum = 0;
@@ -72,17 +78,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   @override
   initState() {
     super.initState();
-    positionAnimationController = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: 5),
-    )..addListener(() => setState(() {}));
-    positionAnimation = CurvedAnimation(
-      parent: positionAnimationController,
-      curve: Curves.elasticIn,
-    );
-    // positionAnimationController.forward();
-
-    //=========
+    animatePositionMarkerDir(0.0, 0.0);
     mapController = MapController();
     zoomLevel = 8;
     position = LatLng(46.0835, 6.9887);
@@ -99,6 +95,22 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     setState(() {
       dataModalVisible = !dataModalVisible;
     });
+  }
+
+  void animatePositionMarkerDir(double begin, double end) {
+    positionAnimationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+    positionAnimation = Tween(begin: begin, end: end).animate(CurvedAnimation(
+        parent: positionAnimationController, curve: Curves.linear));
+    // positionAnimationController.forward();
+    if (positionAnimationController.isAnimating) {
+      // positionAnimationController.stop();
+    } else {
+      // positionAnimationController.reset();
+      positionAnimationController.forward();
+    }
   }
 
   void takeScreenshot() async {
@@ -194,7 +206,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         _setTrackPoints(currentLocation.latitude, currentLocation.longitude,
             currentLocation.speed, currentLocation.altitude);
       }
-
       setState(() {
         position = LatLng(currentLocation.latitude, currentLocation.longitude);
         currentAlt = currentLocation.altitude;
@@ -204,6 +215,14 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         currentHeading = currentLocation.heading;
         gpsPosition = LatLng(currentLat, currentLng);
       });
+      double currentHeadingRadian = currentHeading * (PI / 180.0);
+      headingList.add(currentHeadingRadian);
+      animatePositionMarkerDir(
+          headingList[headingList.length - 2], headingList.last);
+      print('PENULTIMOOOOOOOO-->>${headingList[headingList.length - 2]}');
+
+      print('ULTIMOOOOOOOO-->>${headingList.last}');
+      print('listaaaaaaaaaa-->>${headingList}');
     });
   }
 
@@ -442,15 +461,27 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                             width: 40,
                             // color: Colors.blue,
                             child: Center(
-                              child: Transform.rotate(
-                                angle: positionAnimationController.value *
-                                    currentHeading,
-                                child: Icon(
-                                  Icons.arrow_drop_up,
-                                  color: Colors.purple[800],
-                                  size: 50,
-                                ),
-                              ),
+                              child: AnimatedBuilder(
+                                  animation: positionAnimation,
+                                  child: Icon(
+                                    Icons.arrow_drop_up,
+                                    color: Colors.purple[800],
+                                    size: 50,
+                                  ),
+                                  builder: (context, child) {
+                                    return Transform.rotate(
+                                      angle: positionAnimation.value,
+                                      child: child,
+                                    );
+                                  }),
+                              //     Transform.rotate(
+                              //   angle: positionAnimation.value * currentHeading,
+                              //   child: Icon(
+                              //     Icons.arrow_drop_up,
+                              //     color: Colors.purple[800],
+                              //     size: 50,
+                              //   ),
+                              // ),
                             ),
                           ),
                         ),
