@@ -54,12 +54,35 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     LatLng(44.6, 10.6),
   ];
 
-  List trackPoints = <LatLng>[];
+  List trackPoints = <List>[];
+  List trackPointsLatLng = <LatLng>[];
+
+  double numPoints = 0;
+  double velSum = 0;
+  double elevSum = 0;
+
+  double avgSpeed;
+  double elevationGain;
+  double grade;
+  double verticalSpeed;
+
+  AnimationController positionAnimationController;
+  Animation<double> positionAnimation;
 
   @override
   initState() {
     super.initState();
+    positionAnimationController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 5),
+    )..addListener(() => setState(() {}));
+    positionAnimation = CurvedAnimation(
+      parent: positionAnimationController,
+      curve: Curves.elasticIn,
+    );
+    // positionAnimationController.forward();
 
+    //=========
     mapController = MapController();
     zoomLevel = 8;
     position = LatLng(46.0835, 6.9887);
@@ -168,7 +191,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
       //aggiungo il nuovo punto alla traccia
       if (record) {
-        _setTrackPoints(currentLocation.latitude, currentLocation.longitude);
+        _setTrackPoints(currentLocation.latitude, currentLocation.longitude,
+            currentLocation.speed, currentLocation.altitude);
       }
 
       setState(() {
@@ -176,7 +200,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         currentAlt = currentLocation.altitude;
         currentLat = currentLocation.latitude;
         currentLng = currentLocation.longitude;
-        currentSpeed = currentLocation.speed;
+        currentSpeed = currentLocation.speed * 3.6;
         currentHeading = currentLocation.heading;
         gpsPosition = LatLng(currentLat, currentLng);
       });
@@ -191,9 +215,26 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     print('my current map position is -> lat${lat}, lng${lng}');
   }
 
-  void _setTrackPoints(double lat, double lng) {
-    trackPoints.add(LatLng(lat, lng));
-    print('LISTA PUNTI?????? ---- >${trackPoints}');
+  void _setTrackPoints(double lat, double lng, double vel, double elev) {
+    trackPoints.add([lat, lng, vel, elev]);
+    trackPointsLatLng.add(LatLng(lat, lng));
+
+    print('LISTA PUNTI?????? ---- >$trackPoints');
+    trackPoints.forEach((el) {
+      // print('SPEED${el[2]}');
+      numPoints += 1;
+      velSum += el[2];
+    });
+    for (var i = 1; i < trackPoints.length; i++) {
+      if (trackPoints[i][3] - trackPoints[i - 1][3] > 0) {
+        elevSum += trackPoints[i][3] - trackPoints[i - 1][3];
+      }
+    }
+    setState(() {
+      avgSpeed = (velSum / numPoints) * 3.6;
+      elevationGain = elevSum;
+    });
+    print('AVG SPEED!!! $avgSpeed');
   }
 
   void _getTrackPoints() {
@@ -278,6 +319,12 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     return Dialog(
       child: Text('dialog'),
     );
+  }
+
+  @override
+  void dispose() {
+    positionAnimationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -373,13 +420,13 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                       lineWidth: 2,
                       textStyle: TextStyle(color: Colors.black, fontSize: 12),
                       padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).size.width * 1.7,
+                          top: MediaQuery.of(context).size.width * 1.62,
                           left: MediaQuery.of(context).size.width * 0.6),
                     ),
                     PolylineLayerOptions(
                       polylines: [
                         Polyline(
-                            points: trackPoints,
+                            points: trackPointsLatLng,
                             strokeWidth: 5.0,
                             color: Colors.purple),
                       ],
@@ -391,10 +438,19 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                           height: 50.0,
                           point: gpsPosition,
                           builder: (ctx) => Container(
-                            child: Icon(
-                              Icons.add_circle_outline,
-                              color: Colors.red[800],
-                              size: 20,
+                            height: 40,
+                            width: 40,
+                            // color: Colors.blue,
+                            child: Center(
+                              child: Transform.rotate(
+                                angle: positionAnimationController.value *
+                                    currentHeading,
+                                child: Icon(
+                                  Icons.arrow_drop_up,
+                                  color: Colors.purple[800],
+                                  size: 50,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -445,6 +501,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                     Text('Altitude->${currentAlt.toString()}'),
                     Text('Speed->${currentSpeed.toString()}'),
                     Text('Heading dir->${currentHeading.toString()}'),
+                    Text('Avg Speed->${avgSpeed.toString()}'),
+                    Text('D+->${elevationGain.toString()}'),
                     Text('ERROR->${container.errorFetchMaps.toString()}'),
                     Container(
                       width: 200,
