@@ -61,7 +61,7 @@ class _AppStateContainerState extends State<AppStateContainer> {
   bool isMailVerified;
   String userId;
 
-  String mapTagState = "opentopomap";
+  String mapTagState = "mapbox_out";
   List<Maps> maps;
   List<Maps> mapsFromFetch;
   bool loadedMaps = false;
