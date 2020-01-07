@@ -64,6 +64,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   ];
 
   double numPoints = 0;
+  double distSum = 0;
   double velSum = 0;
   double elevSum = 0;
 
@@ -74,6 +75,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   AnimationController positionAnimationController;
   Animation<double> positionAnimation;
+
+  Stopwatch stopwatch = new Stopwatch();
 
   @override
   initState() {
@@ -95,6 +98,11 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     setState(() {
       dataModalVisible = !dataModalVisible;
     });
+  }
+
+  void handleRecord() {
+    record = !record;
+    stopwatch..start();
   }
 
   void animatePositionMarkerDir(double begin, double end) {
@@ -171,7 +179,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   void _getMyGPSLocationOnInit() async {
     location.changeSettings(
-        accuracy: LocationAccuracy.HIGH, interval: 2000, distanceFilter: 3);
+        accuracy: LocationAccuracy.HIGH, interval: 1000, distanceFilter: 2);
     currentLocation = await location.getLocation();
     setState(() {
       currentAlt = currentLocation.altitude;
@@ -237,20 +245,30 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   void _setTrackPoints(double lat, double lng, double vel, double elev) {
     trackPoints.add([lat, lng, vel, elev]);
     trackPointsLatLng.add(LatLng(lat, lng));
-
+    print(stopwatch.elapsed);
     print('LISTA PUNTI?????? ---- >$trackPoints');
-    trackPoints.forEach((el) {
-      // print('SPEED${el[2]}');
-      numPoints += 1;
-      velSum += el[2];
-    });
-    for (var i = 1; i < trackPoints.length; i++) {
-      if (trackPoints[i][3] - trackPoints[i - 1][3] > 0) {
-        elevSum += trackPoints[i][3] - trackPoints[i - 1][3];
-      }
+    //calcolo distanza percorsa
+    final Distance distance = new Distance();
+    final double meterDist = distance(
+        LatLng(trackPoints.last[0], trackPoints.last[1]),
+        LatLng(trackPoints[trackPoints.length - 2][0],
+            trackPoints[trackPoints.length - 2][1]));
+    distSum += meterDist;
+
+    //calcolo velocità media basandosi sulla velocità puntuale
+    // trackPoints.forEach((el) {
+    //   // print('SPEED${el[2]}');
+    //   // velSum += el[2];
+    //   numPoints += 1;
+    // });
+    print('DISTANZA CUMULATA===$distSum');
+
+    //calcolo D+
+    if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
+      elevSum += trackPoints.last[3] - trackPoints[trackPoints.length - 2][3];
     }
     setState(() {
-      avgSpeed = (velSum / numPoints) * 3.6;
+      avgSpeed = (distSum / stopwatch.elapsed.inSeconds) * 3.6;
       elevationGain = elevSum;
     });
     print('AVG SPEED!!! $avgSpeed');
@@ -529,11 +547,15 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                   children: <Widget>[
                     Text('Lat->${currentLat.toString()}'),
                     Text('Lng->${currentLng.toString()}'),
-                    Text('Altitude->${currentAlt.toString()}'),
-                    Text('Speed->${currentSpeed.toString()}'),
+                    Text('Altitude->${currentAlt.toString()} m'),
+                    Text('Speed->${currentSpeed.toString()} km/h'),
                     Text('Heading dir->${currentHeading.toString()}'),
-                    Text('Avg Speed->${avgSpeed.toString()}'),
-                    Text('D+->${elevationGain.toString()}'),
+                    Text('Elapsed time->${stopwatch.elapsed.toString()}'),
+                    Text('distance->${(distSum / 1000).toString()} km'),
+                    Text('Avg Speed->${avgSpeed.toString()} km/h'),
+                    Text('D+->${elevationGain.toString()} m'),
+                    Text('grade%->${elevationGain.toString()} m'),
+                    Text('vert spd->${elevationGain.toString()} m'),
                     Text('ERROR->${container.errorFetchMaps.toString()}'),
                     Container(
                       width: 200,
@@ -623,7 +645,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                   color: Colors.white,
                   onPressed: () {
                     setState(() {
-                      record = !record;
+                      handleRecord();
                     });
                   },
                 ),
