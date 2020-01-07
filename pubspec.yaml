@@ -24,6 +24,8 @@ dependencies:
   geolocator: ^5.1.5
   screenshot: ^0.1.1
   path_provider: ^1.5.1
+  app_settings: ^3.0.0+1
+  battery_optimization: ^0.1.0
 
   # redux: ^3.0.0
   # flutter_redux: ^0.5.4

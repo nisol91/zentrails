@@ -13,9 +13,10 @@ import '../views/settings_page.dart';
 import '../views/map_list_page.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter_map/plugin_api.dart';
 import '../plugins/scale_layer_plugin_options.dart';
+import 'package:battery_optimization/battery_optimization.dart';
 
 class MapView extends StatefulWidget {
   @override
@@ -40,6 +41,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   bool dataModalVisible = true;
   bool record = false;
+  bool batteryOptModal = false;
 
   File _mapScreenshot;
 
@@ -67,6 +69,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   double distSum = 0;
   double velSum = 0;
   double elevSum = 0;
+  double vrtSpd = 0;
+  double grd = 0;
 
   double avgSpeed;
   double elevationGain;
@@ -75,6 +79,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   AnimationController positionAnimationController;
   Animation<double> positionAnimation;
+  AnimationController animatedMapMoveController;
 
   Stopwatch stopwatch = new Stopwatch();
 
@@ -93,6 +98,24 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
       _getMyGPSLocationOnMove();
       _getTrackPoints();
     });
+
+    //gestione settings
+    //l' app deve per forza essere esclusa dall'ottimizzazione della batteria per poter funzionare anche
+    //in background
+    BatteryOptimization.isIgnoringBatteryOptimizations().then((onValue) {
+      setState(() {
+        if (onValue) {
+          // Ignoring Battery Optimization
+          print('ok, l app ignora battery opt');
+        } else {
+          // App is under battery optimization
+          setState(() {
+            batteryOptModal = true;
+          });
+        }
+      });
+    });
+    // AppSettings.openAppSettings();
   }
 
   void showModal() {
@@ -156,28 +179,28 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     final _zoomTween = Tween<double>(begin: mapController.zoom, end: destZoom);
 
     // Create a animation controller that has a duration and a TickerProvider.
-    var controller = AnimationController(
+    var animatedMapMoveController = AnimationController(
         duration: const Duration(milliseconds: 500), vsync: this);
     // The animation determines what path the animation will take. You can try different Curves values, although I found
     // fastOutSlowIn to be my favorite.
-    Animation<double> animation =
-        CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
+    Animation<double> animation = CurvedAnimation(
+        parent: animatedMapMoveController, curve: Curves.fastOutSlowIn);
 
-    controller.addListener(() {
+    animatedMapMoveController.addListener(() {
       mapController.move(
           LatLng(_latTween.evaluate(animation), _lngTween.evaluate(animation)),
           _zoomTween.evaluate(animation));
     });
 
-    animation.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        controller.dispose();
-      } else if (status == AnimationStatus.dismissed) {
-        controller.dispose();
-      }
-    });
+    // animation.addStatusListener((status) {
+    //   if (status == AnimationStatus.completed) {
+    //     animatedMapMoveController.dispose();
+    //   } else if (status == AnimationStatus.dismissed) {
+    //     animatedMapMoveController.dispose();
+    //   }
+    // });
 
-    controller.forward();
+    animatedMapMoveController.forward();
   }
 
   void _locateMyPosition(lat, lng, zoom) {
@@ -250,9 +273,9 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void _setTrackPoints(double lat, double lng, double vel, double elev) {
-    trackPoints.add([lat, lng, vel, elev]);
+    trackPoints.add([lat, lng, vel, elev, stopwatch.elapsed.inSeconds]);
     trackPointsLatLng.add(LatLng(lat, lng));
-    print(stopwatch.elapsed);
+    print('TEMPO-->${stopwatch.elapsed.inSeconds}');
     print('LISTA PUNTI?????? ---- >$trackPoints');
     //calcolo distanza percorsa
     final Distance distance = new Distance();
@@ -262,23 +285,44 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
             trackPoints[trackPoints.length - 2][1]));
     distSum += meterDist;
 
-    //calcolo velocità media basandosi sulla velocità puntuale
-    // trackPoints.forEach((el) {
-    //   // print('SPEED${el[2]}');
-    //   // velSum += el[2];
-    //   numPoints += 1;
-    // });
-    print('DISTANZA CUMULATA===$distSum');
-
     //calcolo D+
     if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
       elevSum += trackPoints.last[3] - trackPoints[trackPoints.length - 2][3];
     }
+    //calcolo vert spd in m/min
+    if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
+      vrtSpd = (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3]) /
+              trackPoints.last[4] -
+          trackPoints[trackPoints.length - 2][4];
+    }
+    //calcolo pendenza
+    if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
+      grd += (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3]) /
+          meterDist *
+          100;
+    }
+
     setState(() {
       avgSpeed = (distSum / stopwatch.elapsed.inSeconds) * 3.6;
       elevationGain = elevSum;
+      verticalSpeed = vrtSpd * 60;
+      grade = grd;
     });
+    print('DISTANZA CUMULATA===$distSum');
+
     print('AVG SPEED!!! $avgSpeed');
+    print('VERTICAL SPEED!!! $verticalSpeed');
+  }
+
+  void _saveTrack() {
+    Firestore.instance
+        .collection("users")
+        .document(AppStateContainer.of(context).id)
+        .collection('Tracks')
+        .document('6UqAowqXk9Ua282FpVWq')
+        .setData({
+      "creationDate": Timestamp.now(),
+    });
   }
 
   void _getTrackPoints() {
@@ -343,6 +387,32 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     );
   }
 
+  Widget get _batteryOptimization {
+    return AlertDialog(
+      title: new Text('Please exclude this app from battery optimization'),
+      content: new Text(
+        'You have to do that in order to make it run in background',
+        style: new TextStyle(fontSize: 30.0),
+      ),
+      actions: <Widget>[
+        new FlatButton(
+            onPressed: () {
+              print('no');
+              setState(() {
+                batteryOptModal = false;
+              });
+            },
+            child: new Text('no')),
+        new FlatButton(
+            onPressed: () {
+              print('yes');
+              BatteryOptimization.openBatteryOptimizationSettings();
+            },
+            child: new Text('yes')),
+      ],
+    );
+  }
+
   Widget get _youHaveTappedOn {
     return SimpleDialog(
       title: const Text('You have tapped on:'),
@@ -368,6 +438,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   @override
   void dispose() {
     positionAnimationController.dispose();
+    animatedMapMoveController.dispose();
+
     super.dispose();
   }
 
@@ -524,6 +596,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                 ),
               ),
         (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
+        (batteryOptModal) ? _batteryOptimization : Container(),
         Positioned(
           top: 100,
           left: 5,
@@ -641,13 +714,13 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
             color: Colors.transparent,
             child: Center(
               child: Ink(
-                decoration: const ShapeDecoration(
-                  color: Colors.red,
+                decoration: ShapeDecoration(
+                  color: (record) ? Colors.yellow : Colors.green,
                   shape: CircleBorder(),
                 ),
                 child: IconButton(
                   icon: Icon(
-                    (record) ? Icons.stop : Icons.play_arrow,
+                    (record) ? Icons.pause : Icons.play_arrow,
                     size: 15,
                   ),
                   color: Colors.white,
