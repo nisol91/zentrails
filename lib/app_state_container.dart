@@ -103,9 +103,9 @@ class _AppStateContainerState extends State<AppStateContainer> {
 
   void handleBatteryOpt() async {
     //l' app deve per forza essere esclusa dall'ottimizzazione della batteria per poter funzionare anche
-    //in background
-    SharedPreferences prefsModalBattery = await SharedPreferences.getInstance();
-    prefsModalBattery.setBool('checkBatteryOpt', false);
+    //in background, cosi salvo sul telefono se ho già visto l avviso almeno una volta, per non farlo riapparire.
+    // SharedPreferences prefsModalBattery = await SharedPreferences.getInstance();
+    // prefsModalBattery.setBool('checkBatteryOpt', false);
     BatteryOptimization.isIgnoringBatteryOptimizations().then((onValue) async {
       if (onValue) {
         // Ignoring Battery Optimization
@@ -114,7 +114,7 @@ class _AppStateContainerState extends State<AppStateContainer> {
         SharedPreferences prefsModalBattery =
             await SharedPreferences.getInstance();
         // App is under battery optimization
-        if (prefsModalBattery.getBool('checkBatteryOpt') == false) {
+        if (prefsModalBattery.getBool('checkBatteryOpt') != true) {
           setState(() {
             batteryOptModal = true;
           });
