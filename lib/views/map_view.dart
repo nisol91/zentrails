@@ -17,6 +17,7 @@ import 'package:app_settings/app_settings.dart';
 import 'package:flutter_map/plugin_api.dart';
 import '../plugins/scale_layer_plugin_options.dart';
 import 'package:battery_optimization/battery_optimization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MapView extends StatefulWidget {
   @override
@@ -41,7 +42,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   bool dataModalVisible = true;
   bool record = false;
-  bool batteryOptModal = false;
 
   File _mapScreenshot;
 
@@ -98,23 +98,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
       _getMyGPSLocationOnMove();
       _getTrackPoints();
     });
-
     //gestione settings
-    //l' app deve per forza essere esclusa dall'ottimizzazione della batteria per poter funzionare anche
-    //in background
-    BatteryOptimization.isIgnoringBatteryOptimizations().then((onValue) {
-      setState(() {
-        if (onValue) {
-          // Ignoring Battery Optimization
-          print('ok, l app ignora battery opt');
-        } else {
-          // App is under battery optimization
-          setState(() {
-            batteryOptModal = true;
-          });
-        }
-      });
-    });
     // AppSettings.openAppSettings();
   }
 
@@ -388,6 +372,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   Widget get _batteryOptimization {
+    final container = AppStateContainer.of(context);
+
     return AlertDialog(
       title: new Text('Please exclude this app from battery optimization'),
       content: new Text(
@@ -399,14 +385,14 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
             onPressed: () {
               print('no');
               setState(() {
-                batteryOptModal = false;
+                container.batteryOptModal = false;
               });
             },
             child: new Text('no')),
         new FlatButton(
             onPressed: () {
               print('yes');
-              batteryOptModal = false;
+              container.batteryOptModal = false;
 
               BatteryOptimization.openBatteryOptimizationSettings();
             },
@@ -598,7 +584,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                 ),
               ),
         (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
-        (batteryOptModal) ? _batteryOptimization : Container(),
+        (container.batteryOptModal) ? _batteryOptimization : Container(),
         Positioned(
           top: 100,
           left: 5,

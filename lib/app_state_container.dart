@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:battery_optimization/battery_optimization.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'models/maps_model.dart';
 import 'state/app_state.dart';
 import 'package:flutter/foundation.dart';
@@ -68,6 +70,8 @@ class _AppStateContainerState extends State<AppStateContainer> {
   bool showMapListPage = false;
   String errorFetchMaps;
 
+  bool batteryOptModal = false;
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -84,10 +88,43 @@ class _AppStateContainerState extends State<AppStateContainer> {
       print(state);
       // fake some config loading
       print('INIT APP');
+      sharedPrefs();
+      handleBatteryOpt();
+
       initUser().whenComplete(() => getUser().whenComplete(
           () => startCountdown().whenComplete(() => streamUser())));
       getMap();
     }
+  }
+  //===========================================
+
+  void sharedPrefs() async {}
+  //===========================================
+
+  void handleBatteryOpt() async {
+    //l' app deve per forza essere esclusa dall'ottimizzazione della batteria per poter funzionare anche
+    //in background
+    SharedPreferences prefsModalBattery = await SharedPreferences.getInstance();
+    prefsModalBattery.setBool('checkBatteryOpt', false);
+    BatteryOptimization.isIgnoringBatteryOptimizations().then((onValue) async {
+      if (onValue) {
+        // Ignoring Battery Optimization
+        print('ok, l app ignora battery opt');
+      } else {
+        SharedPreferences prefsModalBattery =
+            await SharedPreferences.getInstance();
+        // App is under battery optimization
+        if (prefsModalBattery.getBool('checkBatteryOpt') == false) {
+          setState(() {
+            batteryOptModal = true;
+          });
+          SharedPreferences prefsModalBattery =
+              await SharedPreferences.getInstance();
+          prefsModalBattery.setBool('checkBatteryOpt', true);
+          print('waAAAAAA${prefsModalBattery.getBool('checkBatteryOpt')}');
+        }
+      }
+    });
   }
 
   //===========================================
