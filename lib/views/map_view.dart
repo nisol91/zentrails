@@ -406,6 +406,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         new FlatButton(
             onPressed: () {
               print('yes');
+              batteryOptModal = false;
+
               BatteryOptimization.openBatteryOptimizationSettings();
             },
             child: new Text('yes')),
