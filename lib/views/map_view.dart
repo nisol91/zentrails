@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-
+import 'package:ZenTrails/plugins/timer_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -85,6 +85,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     mapController = MapController();
     zoomLevel = 8;
     position = LatLng(46.0835, 6.9887);
+
     //dopo che la mappa si è caricata, ricerco la posizione
     Future.delayed(new Duration(milliseconds: 500), () {
       //(in alternativa plugin geolocation)
@@ -102,7 +103,13 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   void handleRecord() {
     record = !record;
-    stopwatch..start();
+
+    if (stopwatch.isRunning) {
+      stopwatch.stop();
+      print(stopwatch.elapsed);
+    } else {
+      stopwatch.start();
+    }
   }
 
   void animatePositionMarkerDir(double begin, double end) {
@@ -549,20 +556,21 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                     Text('Lng->${currentLng.toString()}'),
                     Text('Altitude->${currentAlt.toString()} m'),
                     Text('Speed->${currentSpeed.toString()} km/h'),
-                    Text('Heading dir->${currentHeading.toString()}'),
+                    Text('Heading dir->${currentHeading.toString()}°'),
                     Text('Elapsed time->${stopwatch.elapsed.toString()}'),
+                    TimerText(stopwatch: stopwatch),
                     Text('distance->${(distSum / 1000).toString()} km'),
                     Text('Avg Speed->${avgSpeed.toString()} km/h'),
                     Text('D+->${elevationGain.toString()} m'),
-                    Text('grade%->${elevationGain.toString()} m'),
-                    Text('vert spd->${elevationGain.toString()} m'),
-                    Text('ERROR->${container.errorFetchMaps.toString()}'),
-                    Container(
-                      width: 200,
-                      height: 100,
-                      color: Colors.grey,
-                      child: Text('Speed->${container.maps[0].url.toString()}'),
-                    )
+                    Text('grade->${elevationGain.toString()} %'),
+                    Text('vert spd->${elevationGain.toString()} m/min'),
+                    // Text('ERROR->${container.errorFetchMaps.toString()}'),
+                    // Container(
+                    //   width: 200,
+                    //   height: 100,
+                    //   color: Colors.grey,
+                    //   child: Text('Speed->${container.maps[0].url.toString()}'),
+                    // )
                   ],
                 ),
               )),
