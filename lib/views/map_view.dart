@@ -58,6 +58,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   ];
 
   List trackPoints = <List>[];
+  List trackPointsForDb = <List>[];
+
   List trackPointsLatLng = <LatLng>[];
 
   //mi serve per fare differenze tra angoli per la heading
@@ -256,8 +258,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void _setTrackPoints(double lat, double lng, double vel, double elev) {
-    trackPoints.add(
-        [lat, lng, vel, elev, stopwatch.elapsed.inSeconds, Timestamp.now()]);
+    trackPoints.add([lat, lng, vel, elev, stopwatch.elapsed.inSeconds]);
     trackPointsLatLng.add(LatLng(lat, lng));
     print('TEMPO-->${stopwatch.elapsed.inSeconds}');
     print('LISTA PUNTI?????? ---- >$trackPoints');
@@ -267,7 +268,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         LatLng(trackPoints.last[0], trackPoints.last[1]),
         LatLng(trackPoints[trackPoints.length - 2][0],
             trackPoints[trackPoints.length - 2][1]));
-
     //calcolo D+
     if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
       elevSum += trackPoints.last[3] - trackPoints[trackPoints.length - 2][3];
@@ -295,6 +295,17 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     print('DISLIVELLO CUMULATO===$totalElevationGain');
     print('AVG SPEED!!! $avgSpeed');
     print('VERTICAL SPEED!!! $verticalSpeed');
+    trackPointsForDb.add([
+      lat,
+      lng,
+      vel,
+      elev,
+      avgSpeed,
+      totalElevationGain,
+      totalDistSum,
+      stopwatch.elapsed.inSeconds,
+      Timestamp.now()
+    ]);
   }
 
   void _saveTrack() {
@@ -303,13 +314,22 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         .document(AppStateContainer.of(context).id)
         .collection('Tracks')
         .add({
-      'name': 'test track con collection',
+      'name': 'test track TEST UFFICIALE vol III',
       'description': 'Complete Programming Guide to save tracks with Flutter',
     }).then((onValue) {
-      trackPoints.forEach((point) {
-        onValue.collection('Points').add({'point': point});
+      trackPointsForDb.forEach((point) {
+        onValue.collection('Points').add({
+          'lat': point[0],
+          'lng': point[1],
+          'vel': point[2],
+          'elev': point[3],
+          'avgSpeed': point[4],
+          'totalElevationGain': point[5],
+          'totalDistSum': point[6],
+          'stopwatch': point[7],
+          'timestamp': point[8],
+        });
       });
-      print('VALUEEEEEEEEEE${onValue.collection('Points')}');
     });
   }
 
