@@ -84,8 +84,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   Animation<double> positionAnimation;
   AnimationController animatedMapMoveController;
 
-  Stopwatch stopwatch = new Stopwatch();
-
   @override
   initState() {
     super.initState();
@@ -109,15 +107,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     setState(() {
       dataModalVisible = !dataModalVisible;
     });
-  }
-
-  void handleRecord() {
-    if (stopwatch.isRunning) {
-      stopwatch.stop();
-      print(stopwatch.elapsed);
-    } else {
-      stopwatch.start();
-    }
   }
 
   void animatePositionMarkerDir(double begin, double end) {
@@ -193,6 +182,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void _getMyGPSLocationOnInit() async {
+    final container = AppStateContainer.of(context);
+
     location.changeSettings(
         accuracy: LocationAccuracy.HIGH, interval: 1000, distanceFilter: 2);
     currentLocation = await location.getLocation();
@@ -203,6 +194,13 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
       currentSpeed = currentLocation.speed;
       currentHeading = currentLocation.heading;
       gpsPosition = LatLng(currentLat, currentLng);
+
+      //le setto anche nell app container
+      container.currentLat = currentLat;
+      container.currentLng = currentLng;
+      container.currentAlt = currentAlt;
+      container.currentSpeed = currentSpeed;
+      container.currentHeading = currentHeading;
     });
     //mi va subito alla positione aggiornandola se c è
     _locateMyPosition(currentLat, currentLng, zoomLevel);
@@ -213,6 +211,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void _getMyGPSLocationOnMove() {
+    final container = AppStateContainer.of(context);
+
     //cosi streamo la mia posizione in continuo
     location.onLocationChanged().listen((LocationData currentLocation) {
       print(currentLocation.latitude);
@@ -237,6 +237,12 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         currentSpeed = currentLocation.speed * 3.6;
         currentHeading = currentLocation.heading;
         gpsPosition = LatLng(currentLat, currentLng);
+        //le setto anche nell app container
+        container.currentLat = currentLat;
+        container.currentLng = currentLng;
+        container.currentAlt = currentAlt;
+        container.currentSpeed = currentSpeed;
+        container.currentHeading = currentHeading;
       });
       double currentHeadingRadian = currentHeading * (PI / 180.0);
       headingList.add(currentHeadingRadian);
@@ -258,9 +264,12 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void _setTrackPoints(double lat, double lng, double vel, double elev) {
-    trackPoints.add([lat, lng, vel, elev, stopwatch.elapsed.inSeconds]);
+    final container = AppStateContainer.of(context);
+
+    trackPoints
+        .add([lat, lng, vel, elev, container.stopwatch.elapsed.inSeconds]);
     trackPointsLatLng.add(LatLng(lat, lng));
-    print('TEMPO-->${stopwatch.elapsed.inSeconds}');
+    print('TEMPO-->${container.stopwatch.elapsed.inSeconds}');
     print('LISTA PUNTI?????? ---- >$trackPoints');
     //calcolo distanza percorsa
     final Distance distance = new Distance();
@@ -285,11 +294,20 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     }
 
     setState(() {
-      avgSpeed = (totalDistSum / stopwatch.elapsed.inSeconds) * 3.6;
+      avgSpeed = (totalDistSum / container.stopwatch.elapsed.inSeconds) * 3.6;
       totalElevationGain += elevSum;
       totalDistSum += meterDist;
       verticalSpeed = vrtSpd * 60;
       grade = grd;
+
+//le setto anche nell app container
+
+      container.totalDistSum = totalDistSum;
+      container.totalElevationGain = totalElevationGain;
+      container.elevSum = elevSum;
+      container.avgSpeed = avgSpeed;
+      container.grade = grade;
+      container.verticalSpeed = verticalSpeed;
     });
     print('DISTANZA CUMULATA===$totalDistSum');
     print('DISLIVELLO CUMULATO===$totalElevationGain');
@@ -303,7 +321,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
       avgSpeed,
       totalElevationGain,
       totalDistSum,
-      stopwatch.elapsed.inSeconds,
+      container.stopwatch.elapsed.inSeconds,
       Timestamp.now()
     ]);
   }
@@ -638,19 +656,19 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                 color: Colors.white,
                 child: Column(
                   children: <Widget>[
-                    Text('Lat->${currentLat.toString()}'),
-                    Text('Lng->${currentLng.toString()}'),
-                    Text('Altitude->${currentAlt.toString()} m'),
-                    Text('Speed->${currentSpeed.toString()} km/h'),
-                    Text('Heading dir->${currentHeading.toString()}°'),
-                    Text('Elapsed time->${stopwatch.elapsed.toString()}'),
-                    TimerText(stopwatch: stopwatch),
-                    Text('distance->${(totalDistSum / 1000).toString()} km'),
-                    Text('Avg Speed->${avgSpeed.toString()} km/h'),
-                    Text('D+->${totalElevationGain.toString()} m'),
-                    Text('D+ intervallo->${elevSum.toString()} m'),
-                    Text('grade->${grade.toString()} %'),
-                    Text('vert spd->${verticalSpeed.toString()} m/min'),
+                    // Text('Lat->${currentLat.toString()}'),
+                    // Text('Lng->${currentLng.toString()}'),
+                    // Text('Altitude->${currentAlt.toString()} m'),
+                    // Text('Speed->${currentSpeed.toString()} km/h'),
+                    // Text('Heading dir->${currentHeading.toString()}°'),
+                    // Text('Elapsed time->${stopwatch.elapsed.toString()}'),
+                    // TimerText(stopwatch: stopwatch),
+                    // Text('distance->${(totalDistSum / 1000).toString()} km'),
+                    // Text('Avg Speed->${avgSpeed.toString()} km/h'),
+                    // Text('D+->${totalElevationGain.toString()} m'),
+                    // Text('D+ intervallo->${elevSum.toString()} m'),
+                    // Text('grade->${grade.toString()} %'),
+                    // Text('vert spd->${verticalSpeed.toString()} m/min'),
                     // Text('ERROR->${container.errorFetchMaps.toString()}'),
                     // Container(
                     //   width: 200,
@@ -739,7 +757,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                   ),
                   color: Colors.white,
                   onPressed: () {
-                    handleRecord();
+                    container.handleRecord();
                     setState(() {
                       record = !record;
                     });
@@ -770,7 +788,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                         ),
                         color: Colors.white,
                         onPressed: () {
-                          handleRecord();
+                          container.handleRecord();
                           _saveTrack();
                           setState(() {
                             saveTrackModalVisibility = true;

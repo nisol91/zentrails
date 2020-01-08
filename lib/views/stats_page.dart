@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:ZenTrails/plugins/timer_text.dart';
+
 import '../main.dart';
 import '../app_state_container.dart';
 import 'auth_screen.dart';
@@ -18,9 +22,46 @@ class StatsPage extends StatefulWidget {
 }
 
 class _StatsPageState extends State<StatsPage> {
+  double currentLat;
+  double currentLng;
+  double currentAlt;
+  double currentSpeed;
+  double currentHeading;
+  double totalDistSum = 0;
+  double totalElevationGain;
+  double elevSum;
+  double avgSpeed;
+  double grade;
+  double verticalSpeed;
   @override
   initState() {
     super.initState();
+  }
+
+  void setGpsData() {
+    Timer.periodic(Duration(milliseconds: 100), (timer) {
+      setState(() {
+        final container = AppStateContainer.of(context);
+
+        currentLat = container.currentLat;
+        currentLng = container.currentLng;
+        currentAlt = container.currentAlt;
+        currentSpeed = container.currentSpeed;
+        currentHeading = container.currentHeading;
+        totalDistSum = container.totalDistSum;
+        totalElevationGain = container.totalElevationGain;
+        elevSum = container.elevSum;
+        avgSpeed = container.avgSpeed;
+        grade = container.grade;
+        verticalSpeed = container.verticalSpeed;
+      });
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    setGpsData();
   }
 
   Widget get _loading {
@@ -36,11 +77,29 @@ class _StatsPageState extends State<StatsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final container = AppStateContainer.of(context);
+
     // TODO: implement build
     return Padding(
       padding: const EdgeInsets.only(top: 100, left: 20, right: 20),
       child: Container(
-        child: Text('data'),
+        child: Column(
+          children: <Widget>[
+            Text('Lat->${currentLat.toString()}'),
+            Text('Lng->${currentLng.toString()}'),
+            Text('Altitude->${currentAlt.toString()} m'),
+            Text('Speed->${currentSpeed.toString()} km/h'),
+            Text('Heading dir->${currentHeading.toString()}°'),
+            Text('Elapsed time->${container.stopwatch.elapsed.toString()}'),
+            TimerText(stopwatch: container.stopwatch),
+            Text('distance->${(totalDistSum / 1000).toString()} km'),
+            Text('Avg Speed->${avgSpeed.toString()} km/h'),
+            Text('D+->${totalElevationGain.toString()} m'),
+            Text('D+ intervallo->${elevSum.toString()} m'),
+            Text('grade->${grade.toString()} %'),
+            Text('vert spd->${verticalSpeed.toString()} m/min'),
+          ],
+        ),
       ),
     );
   }

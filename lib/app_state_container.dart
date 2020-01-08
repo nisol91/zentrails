@@ -74,6 +74,20 @@ class _AppStateContainerState extends State<AppStateContainer> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  //==gps data
+  double currentLat;
+  double currentLng;
+  double currentAlt;
+  double currentSpeed;
+  double currentHeading;
+  double totalDistSum = 0;
+  double totalElevationGain;
+  double elevSum;
+  double avgSpeed;
+  double grade;
+  double verticalSpeed;
+  Stopwatch stopwatch = new Stopwatch();
+
   @override
   void initState() {
     // You'll almost certainly want to do some logic
@@ -128,6 +142,17 @@ class _AppStateContainerState extends State<AppStateContainer> {
         }
       }
     });
+  }
+
+  //===========================================
+
+  void handleRecord() {
+    if (stopwatch.isRunning) {
+      stopwatch.stop();
+      print(stopwatch.elapsed);
+    } else {
+      stopwatch.start();
+    }
   }
 
   //===========================================
