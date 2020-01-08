@@ -256,7 +256,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void _setTrackPoints(double lat, double lng, double vel, double elev) {
-    trackPoints.add([lat, lng, vel, elev, stopwatch.elapsed.inSeconds]);
+    trackPoints.add(
+        [lat, lng, vel, elev, stopwatch.elapsed.inSeconds, Timestamp.now()]);
     trackPointsLatLng.add(LatLng(lat, lng));
     print('TEMPO-->${stopwatch.elapsed.inSeconds}');
     print('LISTA PUNTI?????? ---- >$trackPoints');
@@ -301,9 +302,14 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         .collection("users")
         .document(AppStateContainer.of(context).id)
         .collection('Tracks')
-        .document('6UqAowqXk9Ua282FpVWq')
-        .setData({
-      "creationDate": Timestamp.now(),
+        .add({
+      'name': 'test track con collection',
+      'description': 'Complete Programming Guide to save tracks with Flutter',
+    }).then((onValue) {
+      trackPoints.forEach((point) {
+        onValue.collection('Points').add({'point': point});
+      });
+      print('VALUEEEEEEEEEE${onValue.collection('Points')}');
     });
   }
 
@@ -724,37 +730,39 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
             ),
           ),
         ),
-        Positioned(
-          width: 30,
-          height: 30,
-          bottom: 30,
-          left: 150,
-          child: Material(
-            color: Colors.transparent,
-            child: Center(
-              child: Ink(
-                decoration: ShapeDecoration(
-                  color: (record) ? Colors.red : Colors.grey,
-                  shape: CircleBorder(),
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.stop,
-                    size: 15,
+        (!record)
+            ? Positioned(
+                width: 30,
+                height: 30,
+                bottom: 30,
+                left: 150,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: Ink(
+                      decoration: ShapeDecoration(
+                        color: (true) ? Colors.red : Colors.grey,
+                        shape: CircleBorder(),
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.stop,
+                          size: 15,
+                        ),
+                        color: Colors.white,
+                        onPressed: () {
+                          handleRecord();
+                          _saveTrack();
+                          setState(() {
+                            saveTrackModalVisibility = true;
+                          });
+                        },
+                      ),
+                    ),
                   ),
-                  color: Colors.white,
-                  onPressed: () {
-                    handleRecord();
-                    setState(() {
-                      record = !record;
-                      saveTrackModalVisibility = true;
-                    });
-                  },
                 ),
-              ),
-            ),
-          ),
-        ),
+              )
+            : Container(),
         Positioned(
           bottom: 30,
           left: 20,
