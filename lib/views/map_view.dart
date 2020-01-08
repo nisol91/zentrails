@@ -33,15 +33,16 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   MapController mapController;
   LocationData currentLocation;
-  bool youHaveTappedOnModal = false;
   double currentLat;
   double currentLng;
   double currentAlt;
   double currentSpeed;
   double currentHeading;
 
+  bool youHaveTappedOnModal = false;
   bool dataModalVisible = true;
   bool record = false;
+  bool saveTrackModalVisibility = false;
 
   File _mapScreenshot;
 
@@ -66,14 +67,14 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   ];
 
   double numPoints = 0;
-  double distSum = 0;
+  double totalDistSum = 0;
+  double totalElevationGain = 0;
   double velSum = 0;
   double elevSum = 0;
   double vrtSpd = 0;
   double grd = 0;
 
   double avgSpeed;
-  double elevationGain;
   double grade;
   double verticalSpeed;
 
@@ -109,8 +110,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void handleRecord() {
-    record = !record;
-
     if (stopwatch.isRunning) {
       stopwatch.stop();
       print(stopwatch.elapsed);
@@ -267,7 +266,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         LatLng(trackPoints.last[0], trackPoints.last[1]),
         LatLng(trackPoints[trackPoints.length - 2][0],
             trackPoints[trackPoints.length - 2][1]));
-    distSum += meterDist;
 
     //calcolo D+
     if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
@@ -276,24 +274,24 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     //calcolo vert spd in m/min
     if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
       vrtSpd = (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3]) /
-              trackPoints.last[4] -
-          trackPoints[trackPoints.length - 2][4];
+          (trackPoints.last[4] - trackPoints[trackPoints.length - 2][4]);
     }
     //calcolo pendenza
     if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
-      grd += (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3]) /
-          meterDist *
+      grd += ((trackPoints.last[3] - trackPoints[trackPoints.length - 2][3]) /
+              meterDist) *
           100;
     }
 
     setState(() {
-      avgSpeed = (distSum / stopwatch.elapsed.inSeconds) * 3.6;
-      elevationGain = elevSum;
+      avgSpeed = (totalDistSum / stopwatch.elapsed.inSeconds) * 3.6;
+      totalElevationGain += elevSum;
+      totalDistSum += meterDist;
       verticalSpeed = vrtSpd * 60;
       grade = grd;
     });
-    print('DISTANZA CUMULATA===$distSum');
-
+    print('DISTANZA CUMULATA===$totalDistSum');
+    print('DISLIVELLO CUMULATO===$totalElevationGain');
     print('AVG SPEED!!! $avgSpeed');
     print('VERTICAL SPEED!!! $verticalSpeed');
   }
@@ -622,11 +620,12 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                     Text('Heading dir->${currentHeading.toString()}°'),
                     Text('Elapsed time->${stopwatch.elapsed.toString()}'),
                     TimerText(stopwatch: stopwatch),
-                    Text('distance->${(distSum / 1000).toString()} km'),
+                    Text('distance->${(totalDistSum / 1000).toString()} km'),
                     Text('Avg Speed->${avgSpeed.toString()} km/h'),
-                    Text('D+->${elevationGain.toString()} m'),
-                    Text('grade->${elevationGain.toString()} %'),
-                    Text('vert spd->${elevationGain.toString()} m/min'),
+                    Text('D+->${totalElevationGain.toString()} m'),
+                    Text('D+ intervallo->${elevSum.toString()} m'),
+                    Text('grade->${grade.toString()} %'),
+                    Text('vert spd->${verticalSpeed.toString()} m/min'),
                     // Text('ERROR->${container.errorFetchMaps.toString()}'),
                     // Container(
                     //   width: 200,
@@ -715,8 +714,40 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                   ),
                   color: Colors.white,
                   onPressed: () {
+                    handleRecord();
                     setState(() {
-                      handleRecord();
+                      record = !record;
+                    });
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          width: 30,
+          height: 30,
+          bottom: 30,
+          left: 150,
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: Ink(
+                decoration: ShapeDecoration(
+                  color: (record) ? Colors.red : Colors.grey,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.stop,
+                    size: 15,
+                  ),
+                  color: Colors.white,
+                  onPressed: () {
+                    handleRecord();
+                    setState(() {
+                      record = !record;
+                      saveTrackModalVisibility = true;
                     });
                   },
                 ),
