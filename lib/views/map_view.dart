@@ -868,7 +868,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                   onPressed: () {
                     print('il centro della mia vista:${mapController.center}');
                     setState(() {
-                      zoomLevel = zoomLevel + 1;
+                      zoomLevel = (zoomLevel.ceilToDouble() + 0.5);
                     });
                     setState(() {
                       position = LatLng(
