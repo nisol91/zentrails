@@ -276,7 +276,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
             trackPoints[trackPoints.length - 2][1]));
     //calcolo D+
     if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
-      elevSum += trackPoints.last[3] - trackPoints[trackPoints.length - 2][3];
+      elevSum = trackPoints.last[3] - trackPoints[trackPoints.length - 2][3];
     }
     //calcolo vert spd in m/min
     if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
@@ -305,6 +305,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
       container.avgSpeed = avgSpeed;
       container.grade = grade;
       container.verticalSpeed = verticalSpeed;
+      container.trackPoints = trackPoints;
     });
     print('DISTANZA CUMULATA===$totalDistSum');
     print('DISLIVELLO CUMULATO===$totalElevationGain');

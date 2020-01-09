@@ -86,6 +86,8 @@ class _AppStateContainerState extends State<AppStateContainer> {
   double avgSpeed;
   double grade;
   double verticalSpeed;
+  List trackPoints = <List>[];
+
   Stopwatch stopwatch = new Stopwatch();
 
   @override

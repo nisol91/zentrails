@@ -33,6 +33,8 @@ class _StatsPageState extends State<StatsPage> {
   double avgSpeed;
   double grade;
   double verticalSpeed;
+  List trackPoints = <List>[];
+
   @override
   initState() {
     super.initState();
@@ -54,6 +56,7 @@ class _StatsPageState extends State<StatsPage> {
         avgSpeed = container.avgSpeed;
         grade = container.grade;
         verticalSpeed = container.verticalSpeed;
+        trackPoints = container.trackPoints;
       });
     });
   }
@@ -95,9 +98,13 @@ class _StatsPageState extends State<StatsPage> {
             Text('distance->${(totalDistSum / 1000).toString()} km'),
             Text('Avg Speed->${avgSpeed.toString()} km/h'),
             Text('D+->${totalElevationGain.toString()} m'),
-            Text('D+ intervallo->${elevSum.toString()} m'),
             Text('grade->${grade.toString()} %'),
             Text('vert spd->${verticalSpeed.toString()} m/min'),
+            Text('D+ intervallo->${elevSum.toString()} m'),
+            Text('ultimo elev->${trackPoints.last[3]} '),
+            Text('penultimo elev->${trackPoints[trackPoints.length - 2][3]} '),
+            Text('ultimo tempo->${trackPoints.last[4]} '),
+            Text('penultimo tempo->${trackPoints[trackPoints.length - 2][4]} '),
           ],
         ),
       ),
