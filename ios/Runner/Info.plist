@@ -44,6 +44,9 @@
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
+
+		<key>NSLocationAlwaysUsageDescription</key>
+		<key>NSLocationWhenInUseUsageDescription</key>
 		<false/>
 		<!-- Put me in the [my_project]/ios/Runner/Info.plist file -->
 		<!-- Google Sign-in Section -->
@@ -56,10 +59,11 @@
 				<array>
 					<!-- TODO Replace this value: -->
 					<!-- Copied from GoogleService-Info.plist key REVERSED_CLIENT_ID -->
-					<string>com.googleusercontent.apps.632772079555-o25gbl90vo1086v04uvchjunivl6ebkd</string>
+					<string>com.googleusercontent.apps.981089706929-g49uu96gg859tu6rheuasju45ji9g8ce</string>
 				</array>
 			</dict>
 		</array>
 		<!-- End of the Google Sign-in Section -->
 	</dict>
 </plist>
+

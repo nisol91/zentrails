@@ -116,32 +116,36 @@ class _AppStateContainerState extends State<AppStateContainer> {
   //===========================================
 
   void handleBatteryOpt() async {
-    //l' app deve per forza essere esclusa dall'ottimizzazione della batteria per poter funzionare anche
-    //in background, cosi salvo sul telefono se ho già visto l avviso almeno una volta, per non farlo riapparire.
-    SharedPreferences prefsModalBattery = await SharedPreferences.getInstance();
-    print(
-        'VERO O FALSO????${prefsModalBattery.containsKey('checkBatteryOpt')}');
-    if (prefsModalBattery.containsKey('checkBatteryOpt') == false) {
-      prefsModalBattery.setBool('checkBatteryOpt', false);
-    }
-    BatteryOptimization.isIgnoringBatteryOptimizations().then((onValue) async {
+    if (Platform.isAndroid) {
+      //l' app deve per forza essere esclusa dall'ottimizzazione della batteria per poter funzionare anche
+      //in background, cosi salvo sul telefono se ho già visto l avviso almeno una volta, per non farlo riapparire.
       SharedPreferences prefsModalBattery =
           await SharedPreferences.getInstance();
-      if (onValue) {
-        // Ignoring Battery Optimization
-        print('ok, l app ignora battery opt');
-      } else {
-        // App is under battery optimization
-        if (prefsModalBattery.getBool('checkBatteryOpt') == false) {
-          setState(() {
-            batteryOptModal = true;
-          });
-
-          prefsModalBattery.setBool('checkBatteryOpt', true);
-          print('waAAAAAA${prefsModalBattery.getBool('checkBatteryOpt')}');
-        }
+      print(
+          'VERO O FALSO????${prefsModalBattery.containsKey('checkBatteryOpt')}');
+      if (prefsModalBattery.containsKey('checkBatteryOpt') == false) {
+        prefsModalBattery.setBool('checkBatteryOpt', false);
       }
-    });
+      BatteryOptimization.isIgnoringBatteryOptimizations()
+          .then((onValue) async {
+        SharedPreferences prefsModalBattery =
+            await SharedPreferences.getInstance();
+        if (onValue) {
+          // Ignoring Battery Optimization
+          print('ok, l app ignora battery opt');
+        } else {
+          // App is under battery optimization
+          if (prefsModalBattery.getBool('checkBatteryOpt') == false) {
+            setState(() {
+              batteryOptModal = true;
+            });
+
+            prefsModalBattery.setBool('checkBatteryOpt', true);
+            print('waAAAAAA${prefsModalBattery.getBool('checkBatteryOpt')}');
+          }
+        }
+      });
+    }
   }
 
   //===========================================

@@ -13,7 +13,6 @@ import '../views/settings_page.dart';
 import '../views/map_list_page.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:app_settings/app_settings.dart';
 import 'package:flutter_map/plugin_api.dart';
 import '../plugins/scale_layer_plugin_options.dart';
 import 'package:battery_optimization/battery_optimization.dart';
@@ -99,8 +98,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
       _getMyGPSLocationOnMove();
       _getTrackPoints();
     });
-    //gestione settings
-    // AppSettings.openAppSettings();
   }
 
   void showModal() {
@@ -437,8 +434,9 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
               setState(() {
                 container.batteryOptModal = false;
               });
-
-              BatteryOptimization.openBatteryOptimizationSettings();
+              if (Platform.isAndroid) {
+                BatteryOptimization.openBatteryOptimizationSettings();
+              }
             },
             child: new Text('yes')),
       ],
