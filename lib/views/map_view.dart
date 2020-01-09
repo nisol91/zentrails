@@ -276,8 +276,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
             trackPoints[trackPoints.length - 2][1]));
     //calcolo D+
     //settandoli simulo un parziale d+ per poter testare
-    trackPoints.last[3] = 11.0;
-    trackPoints[trackPoints.length - 2][3] = 10.0;
+    // trackPoints.last[3] = 11.0;
+    // trackPoints[trackPoints.length - 2][3] = 10.0;
     elevSum = 0;
     if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
       elevSum = trackPoints.last[3] - trackPoints[trackPoints.length - 2][3];
@@ -338,7 +338,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         .document(AppStateContainer.of(context).id)
         .collection('Tracks')
         .add({
-      'name': 'test track TEST UFFICIALE vol IV per dispose',
+      'name': 'test track TEST UFFICIALE vol V!!',
       'description': 'Complete Programming Guide to save tracks with Flutter',
     }).then((onValue) {
       trackPointsForDb.forEach((point) {
