@@ -29,9 +29,9 @@ class _StatsPageState extends State<StatsPage> {
   double currentHeading;
   double totalDistSum = 0;
   double totalElevationGain;
-  double elevSum;
+  double elevSum = 0;
   double avgSpeed;
-  double grade;
+  double grade = 0;
   double verticalSpeed;
   List trackPoints = <List>[];
 
@@ -101,10 +101,14 @@ class _StatsPageState extends State<StatsPage> {
             Text('grade->${grade.toString()} %'),
             Text('vert spd->${verticalSpeed.toString()} m/min'),
             Text('D+ intervallo->${elevSum.toString()} m'),
-            Text('ultimo elev->${trackPoints.last[3]} '),
-            Text('penultimo elev->${trackPoints[trackPoints.length - 2][3]} '),
-            Text('ultimo tempo->${trackPoints.last[4]} '),
-            Text('penultimo tempo->${trackPoints[trackPoints.length - 2][4]} '),
+            Text(
+                'ultimo elev->${(trackPoints.isNotEmpty) ? trackPoints.last[3] : 0} '),
+            Text(
+                'penultimo elev->${(trackPoints.isNotEmpty) ? trackPoints[trackPoints.length - 2][3] : 0} '),
+            Text(
+                'ultimo tempo->${(trackPoints.isNotEmpty) ? trackPoints.last[4] : 0} '),
+            Text(
+                'penultimo tempo->${(trackPoints.isNotEmpty) ? trackPoints[trackPoints.length - 2][4] : 0} '),
           ],
         ),
       ),
