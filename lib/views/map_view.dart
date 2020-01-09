@@ -275,6 +275,9 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         LatLng(trackPoints[trackPoints.length - 2][0],
             trackPoints[trackPoints.length - 2][1]));
     //calcolo D+
+    //settandoli simulo un parziale d+ per poter testare
+    trackPoints.last[3] = 11.0;
+    trackPoints[trackPoints.length - 2][3] = 10.0;
     elevSum = 0;
     if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
       elevSum = trackPoints.last[3] - trackPoints[trackPoints.length - 2][3];
@@ -282,11 +285,13 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
       elevSum = 0;
     }
     //calcolo vert spd in m/min
+    vrtSpd = 0;
     if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
       vrtSpd = (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3]) /
           (trackPoints.last[4] - trackPoints[trackPoints.length - 2][4]);
     }
     //calcolo pendenza
+    grd = 0;
     if (trackPoints.last[3] - trackPoints[trackPoints.length - 2][3] > 0) {
       grd = ((trackPoints.last[3] - trackPoints[trackPoints.length - 2][3]) /
               meterDist) *
