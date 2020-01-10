@@ -796,7 +796,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                         ),
                         color: Colors.white,
                         onPressed: () {
-                          container.handleRecord();
                           showDialog(
                               context: context,
                               builder: (BuildContext context) {
