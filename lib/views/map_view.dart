@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:ZenTrails/plugins/timer_text.dart';
+import 'package:ZenTrails/widgets/save_track_modal.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -41,7 +42,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   bool youHaveTappedOnModal = false;
   bool dataModalVisible = true;
   bool record = false;
-  bool saveTrackModalVisibility = false;
 
   File _mapScreenshot;
 
@@ -796,10 +796,12 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                         color: Colors.white,
                         onPressed: () {
                           container.handleRecord();
-                          _saveTrack();
-                          setState(() {
-                            saveTrackModalVisibility = true;
-                          });
+                          // _saveTrack();
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return SaveTrackModal();
+                              });
                         },
                       ),
                     ),
