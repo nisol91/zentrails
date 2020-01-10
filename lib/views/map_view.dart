@@ -809,6 +809,41 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                 ),
               )
             : Container(),
+        (!record)
+            ? Positioned(
+                width: 30,
+                height: 30,
+                bottom: 30,
+                left: 200,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: Ink(
+                      decoration: ShapeDecoration(
+                        color: Colors.grey,
+                        shape: CircleBorder(),
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.delete,
+                          size: 15,
+                        ),
+                        color: Colors.white,
+                        onPressed: () {
+                          print('delete');
+                          setState(() {
+                            trackPoints = <List>[];
+                            trackPointsForDb = <List>[];
+                            trackPointsLatLng = <LatLng>[];
+                            headingList = [];
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : Container(),
         Positioned(
           bottom: 30,
           left: 20,
