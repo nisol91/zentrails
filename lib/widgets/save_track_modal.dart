@@ -68,12 +68,12 @@ class _SaveTrackModalState extends State<SaveTrackModal> {
               children: <Widget>[
                 TextFormField(
                   decoration: InputDecoration(
-                      labelText: 'First Name*', hintText: "John"),
+                      labelText: 'Track Name*', hintText: "My adventure"),
                   controller: trackNameInputController,
                   cursorColor: tema.accentColor,
                   validator: (value) {
                     if (value.length < 3) {
-                      return "Please enter a valid first name.";
+                      return "Please enter a valid name.";
                     }
                   },
                   textInputAction: TextInputAction.next,
@@ -83,13 +83,14 @@ class _SaveTrackModalState extends State<SaveTrackModal> {
                   },
                 ),
                 TextFormField(
-                  decoration:
-                      InputDecoration(labelText: 'Last Name*', hintText: "Doe"),
+                  decoration: InputDecoration(
+                      labelText: 'track Description*',
+                      hintText: "Wonderful tour"),
                   controller: trackDescriptionInputController,
                   cursorColor: tema.accentColor,
                   validator: (value) {
                     if (value.length < 3) {
-                      return "Please enter a valid last name.";
+                      return "Please enter a valid description.";
                     }
                   },
                   textInputAction: TextInputAction.next,
