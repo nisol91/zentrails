@@ -333,8 +333,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void saveTrack(String name, String description) {
-    final container = AppStateContainer.of(context);
-
     Firestore.instance
         .collection("users")
         .document(AppStateContainer.of(context).id)
