@@ -90,6 +90,9 @@ class _AppStateContainerState extends State<AppStateContainer> {
 
   Stopwatch stopwatch = new Stopwatch();
 
+  String trackName;
+  String trackDescription;
+
   @override
   void initState() {
     // You'll almost certainly want to do some logic
@@ -364,6 +367,8 @@ class _AppStateContainerState extends State<AppStateContainer> {
     print('signInWithGoogle succeeded: $user');
     return true;
   }
+
+  //===========================================
 
   Future<Null> signOut() async {
     try {

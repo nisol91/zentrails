@@ -332,14 +332,17 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     ]);
   }
 
-  void _saveTrack() {
+  void saveTrack(String name, String description) {
+    final container = AppStateContainer.of(context);
+
     Firestore.instance
         .collection("users")
         .document(AppStateContainer.of(context).id)
         .collection('Tracks')
         .add({
-      'name': 'test track TEST UFFICIALE vol V!!',
-      'description': 'Complete Programming Guide to save tracks with Flutter',
+      'name': name,
+      'description': description,
+      'creationDate': Timestamp.now(),
     }).then((onValue) {
       trackPointsForDb.forEach((point) {
         onValue.collection('Points').add({
@@ -796,11 +799,13 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                         color: Colors.white,
                         onPressed: () {
                           container.handleRecord();
-                          // _saveTrack();
                           showDialog(
                               context: context,
                               builder: (BuildContext context) {
-                                return SaveTrackModal();
+                                return SaveTrackModal(
+                                  saveTrackFunction: saveTrack,
+                                );
+                                //passo al costruttore del modal la funzione saveTrack
                               });
                         },
                       ),

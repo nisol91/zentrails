@@ -6,8 +6,8 @@ import '../app_state_container.dart';
 import '../main.dart';
 
 class SaveTrackModal extends StatefulWidget {
-  SaveTrackModal({Key key}) : super(key: key);
-
+  final Function(String name, String description) saveTrackFunction;
+  SaveTrackModal({Key key, this.saveTrackFunction}) : super(key: key);
   @override
   _SaveTrackModalState createState() => _SaveTrackModalState();
 }
@@ -104,13 +104,14 @@ class _SaveTrackModalState extends State<SaveTrackModal> {
                     color: Theme.of(context).primaryColor,
                     textColor: Colors.white,
                     onPressed: () {
-                      print('OPRESSED');
+                      //ho passato al costruttore la funzione saveTrack da map_view
+                      widget.saveTrackFunction(trackNameInputController.text,
+                          trackDescriptionInputController.text);
                       FocusScope.of(context).requestFocus(new FocusNode());
                       Navigator.pop(context);
-
                       Flushbar(
                         title: "Hey Ninja",
-                        message: "EMAIL ALREADY IN USE",
+                        message: "track saved",
                         duration: Duration(seconds: 3),
                         backgroundColor: Theme.of(context).accentColor,
                       )..show(context);
