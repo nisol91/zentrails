@@ -18,6 +18,7 @@ import 'package:flutter_map/plugin_api.dart';
 import '../plugins/scale_layer_plugin_options.dart';
 import 'package:battery_optimization/battery_optimization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/app_lifecycle_reactor.dart';
 
 class MapView extends StatefulWidget {
   @override
@@ -636,6 +637,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
               ),
         (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
         (container.batteryOptModal) ? _batteryOptimization : Container(),
+        AppLifecycleReactor(),
         Positioned(
           top: 100,
           left: 5,
