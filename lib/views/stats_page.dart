@@ -41,24 +41,25 @@ class _StatsPageState extends State<StatsPage> {
   }
 
   void setGpsData() {
-    Timer.periodic(Duration(milliseconds: 100), (timer) {
-      setState(() {
-        final container = AppStateContainer.of(context);
-
-        currentLat = container.currentLat;
-        currentLng = container.currentLng;
-        currentAlt = container.currentAlt;
-        currentSpeed = container.currentSpeed;
-        currentHeading = container.currentHeading;
-        totalDistSum = container.totalDistSum;
-        totalElevationGain = container.totalElevationGain;
-        elevSum = container.elevSum;
-        avgSpeed = container.avgSpeed;
-        grade = container.grade;
-        verticalSpeed = container.verticalSpeed;
-        trackPoints = container.trackPoints;
+    var container = AppStateContainer.of(context);
+    if (mounted) {
+      Timer.periodic(Duration(milliseconds: 100), (timer) {
+        setState(() {
+          currentLat = container.currentLat;
+          currentLng = container.currentLng;
+          currentAlt = container.currentAlt;
+          currentSpeed = container.currentSpeed;
+          currentHeading = container.currentHeading;
+          totalDistSum = container.totalDistSum;
+          totalElevationGain = container.totalElevationGain;
+          elevSum = container.elevSum;
+          avgSpeed = container.avgSpeed;
+          grade = container.grade;
+          verticalSpeed = container.verticalSpeed;
+          trackPoints = container.trackPoints;
+        });
       });
-    });
+    }
   }
 
   @override

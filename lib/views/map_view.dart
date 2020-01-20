@@ -638,58 +638,58 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
         (container.batteryOptModal) ? _batteryOptimization : Container(),
         AppLifecycleReactor(),
-        Positioned(
-          top: 100,
-          left: 5,
-          child: Material(
-            child: InkWell(
-              onTap: () {
-                print('ok');
-                showModal();
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: (dataModalVisible)
-                    ? Icon(Icons.close)
-                    : Icon(Icons.add_circle_outline),
-              ),
-            ),
-          ),
-        ),
-        Visibility(
-          visible: dataModalVisible,
-          child: Positioned(
-              top: 100,
-              left: 50,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                color: Colors.white,
-                child: Column(
-                  children: <Widget>[
-                    // Text('Lat->${currentLat.toString()}'),
-                    // Text('Lng->${currentLng.toString()}'),
-                    // Text('Altitude->${currentAlt.toString()} m'),
-                    // Text('Speed->${currentSpeed.toString()} km/h'),
-                    // Text('Heading dir->${currentHeading.toString()}°'),
-                    // Text('Elapsed time->${stopwatch.elapsed.toString()}'),
-                    // TimerText(stopwatch: stopwatch),
-                    // Text('distance->${(totalDistSum / 1000).toString()} km'),
-                    // Text('Avg Speed->${avgSpeed.toString()} km/h'),
-                    // Text('D+->${totalElevationGain.toString()} m'),
-                    // Text('D+ intervallo->${elevSum.toString()} m'),
-                    // Text('grade->${grade.toString()} %'),
-                    // Text('vert spd->${verticalSpeed.toString()} m/min'),
-                    // Text('ERROR->${container.errorFetchMaps.toString()}'),
-                    // Container(
-                    //   width: 200,
-                    //   height: 100,
-                    //   color: Colors.grey,
-                    //   child: Text('Speed->${container.maps[0].url.toString()}'),
-                    // )
-                  ],
-                ),
-              )),
-        ),
+        // Positioned(
+        //   top: 100,
+        //   left: 5,
+        //   child: Material(
+        //     child: InkWell(
+        //       onTap: () {
+        //         print('ok');
+        //         showModal();
+        //       },
+        //       child: Padding(
+        //         padding: const EdgeInsets.all(8.0),
+        //         child: (dataModalVisible)
+        //             ? Icon(Icons.close)
+        //             : Icon(Icons.add_circle_outline),
+        //       ),
+        //     ),
+        //   ),
+        // ),
+        // Visibility(
+        //   visible: dataModalVisible,
+        //   child: Positioned(
+        //       top: 100,
+        //       left: 50,
+        //       child: Container(
+        //         padding: const EdgeInsets.all(16),
+        //         color: Colors.white,
+        //         child: Column(
+        //           children: <Widget>[
+        //             // Text('Lat->${currentLat.toString()}'),
+        //             // Text('Lng->${currentLng.toString()}'),
+        //             // Text('Altitude->${currentAlt.toString()} m'),
+        //             // Text('Speed->${currentSpeed.toString()} km/h'),
+        //             // Text('Heading dir->${currentHeading.toString()}°'),
+        //             // Text('Elapsed time->${stopwatch.elapsed.toString()}'),
+        //             // TimerText(stopwatch: stopwatch),
+        //             // Text('distance->${(totalDistSum / 1000).toString()} km'),
+        //             // Text('Avg Speed->${avgSpeed.toString()} km/h'),
+        //             // Text('D+->${totalElevationGain.toString()} m'),
+        //             // Text('D+ intervallo->${elevSum.toString()} m'),
+        //             // Text('grade->${grade.toString()} %'),
+        //             // Text('vert spd->${verticalSpeed.toString()} m/min'),
+        //             // Text('ERROR->${container.errorFetchMaps.toString()}'),
+        //             // Container(
+        //             //   width: 200,
+        //             //   height: 100,
+        //             //   color: Colors.grey,
+        //             //   child: Text('Speed->${container.maps[0].url.toString()}'),
+        //             // )
+        //           ],
+        //         ),
+        //       )),
+        // ),
         (container.email == '')
             ? Container()
             : Positioned(
