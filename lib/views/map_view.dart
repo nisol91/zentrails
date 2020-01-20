@@ -96,7 +96,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     //dopo che la mappa si è caricata, ricerco la posizione
     Future.delayed(new Duration(milliseconds: 500), () {
       //(in alternativa plugin geolocation)
-      _getMyGPSLocation();
+      _getMyGPSLocationOnInit();
+      // _getMyGPSLocation();
       _getMyGPSLocationOnMove();
       _getTrackPoints();
     });
@@ -180,39 +181,67 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     mapController.move(LatLng(lat, lng), zoom);
   }
 
-  void _getMyGPSLocation() async {
+  void _getMyGPSLocationOnInit() async {
     final container = AppStateContainer.of(context);
-    if (mounted) {
-      Timer.periodic(Duration(milliseconds: 2000), (timer) async {
-        location.changeSettings(
-            accuracy: LocationAccuracy.HIGH, interval: 1000, distanceFilter: 2);
-        currentLocation = await location.getLocation();
-        setState(() {
-          currentAlt = currentLocation.altitude;
-          currentLat = currentLocation.latitude;
-          currentLng = currentLocation.longitude;
-          currentSpeed = currentLocation.speed;
-          currentHeading = currentLocation.heading;
-          gpsPosition = LatLng(currentLat, currentLng);
+    location.changeSettings(
+        accuracy: LocationAccuracy.HIGH, interval: 2000, distanceFilter: 2);
+    currentLocation = await location.getLocation();
+    setState(() {
+      currentAlt = currentLocation.altitude;
+      currentLat = currentLocation.latitude;
+      currentLng = currentLocation.longitude;
+      currentSpeed = currentLocation.speed;
+      currentHeading = currentLocation.heading;
+      gpsPosition = LatLng(currentLat, currentLng);
 
-          //le setto anche nell app container
-          container.currentLat = currentLat;
-          container.currentLng = currentLng;
-          container.currentAlt = currentAlt;
-          container.currentSpeed = currentSpeed;
-          container.currentHeading = currentHeading;
-        });
+      //le setto anche nell app container
+      container.currentLat = currentLat;
+      container.currentLng = currentLng;
+      container.currentAlt = currentAlt;
+      container.currentSpeed = currentSpeed;
+      container.currentHeading = currentHeading;
+    });
 
-        print(currentLocation.latitude);
-        print(currentLocation.longitude);
-        print(currentLocation.speed);
-        print(currentLocation.altitude);
-        print('OGNI 2 SECONDI CERCO LA POSIZIONE======');
-      });
-      //mi va subito alla positione aggiornandola se c è
-      _locateMyPosition(currentLat, currentLng, zoomLevel);
-    }
+    print(currentLocation.latitude);
+    print(currentLocation.longitude);
+    print(currentLocation.speed);
+    print(currentLocation.altitude);
+    print('OGNI 2 SECONDI CERCO LA POSIZIONE======');
+    //mi va subito alla positione aggiornandola se c è
+    _locateMyPosition(currentLat, currentLng, zoomLevel);
   }
+
+  // void _getMyGPSLocation() {
+  //   var container = AppStateContainer.of(context);
+  //   if (mounted) {
+  //     Timer.periodic(Duration(milliseconds: 2000), (timer) async {
+  //       location.changeSettings(
+  //           accuracy: LocationAccuracy.HIGH, interval: 1000, distanceFilter: 2);
+  //       currentLocation = await location.getLocation();
+  //       setState(() {
+  //         currentAlt = currentLocation.altitude;
+  //         currentLat = currentLocation.latitude;
+  //         currentLng = currentLocation.longitude;
+  //         currentSpeed = currentLocation.speed;
+  //         currentHeading = currentLocation.heading;
+  //         gpsPosition = LatLng(currentLat, currentLng);
+
+  //         //le setto anche nell app container
+  //         container.currentLat = currentLat;
+  //         container.currentLng = currentLng;
+  //         container.currentAlt = currentAlt;
+  //         container.currentSpeed = currentSpeed;
+  //         container.currentHeading = currentHeading;
+  //       });
+
+  //       print(currentLocation.latitude);
+  //       print(currentLocation.longitude);
+  //       print(currentLocation.speed);
+  //       print(currentLocation.altitude);
+  //       print('OGNI 2 SECONDI CERCO LA POSIZIONE======');
+  //     });
+  //   }
+  // }
 
   void _getMyGPSLocationOnMove() {
     final container = AppStateContainer.of(context);
@@ -503,7 +532,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
     return Stack(
       children: <Widget>[
-        (!container.loadedMaps)
+        (!container.loadedMaps && container.email != '')
             ? _loadingView
             : Screenshot(
                 controller: screenshotController,
@@ -883,7 +912,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                   icon: Icon(Icons.my_location),
                   color: Colors.white,
                   onPressed: () {
-                    _getMyGPSLocation();
+                    _getMyGPSLocationOnInit();
                     // _locateMyPosition(currentLat, currentLng, zoomLevel);
                     _animatedMapMove(LatLng(currentLat, currentLng), zoomLevel);
                     print('locate position');

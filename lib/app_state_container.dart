@@ -109,7 +109,6 @@ class _AppStateContainerState extends State<AppStateContainer> {
       print('INIT APP');
       sharedPrefs();
       handleBatteryOpt();
-
       initUser().whenComplete(() => getUser().whenComplete(
           () => startCountdown().whenComplete(() => streamUser())));
       getMap();
@@ -207,6 +206,9 @@ class _AppStateContainerState extends State<AppStateContainer> {
   }
 
   void getMap() async {
+    setState(() {
+      loadedMaps = false;
+    });
     print('GETTING=======================');
     Firestore.instance
         .collection("maps")
