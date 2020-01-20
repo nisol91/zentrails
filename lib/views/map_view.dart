@@ -19,6 +19,7 @@ import '../plugins/scale_layer_plugin_options.dart';
 import 'package:battery_optimization/battery_optimization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/app_lifecycle_reactor.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class MapView extends StatefulWidget {
   @override
@@ -95,7 +96,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     //dopo che la mappa si è caricata, ricerco la posizione
     Future.delayed(new Duration(milliseconds: 500), () {
       //(in alternativa plugin geolocation)
-      _getMyGPSLocationOnInit();
+      _getMyGPSLocation();
       _getMyGPSLocationOnMove();
       _getTrackPoints();
     });
@@ -179,33 +180,38 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     mapController.move(LatLng(lat, lng), zoom);
   }
 
-  void _getMyGPSLocationOnInit() async {
+  void _getMyGPSLocation() async {
     final container = AppStateContainer.of(context);
+    if (mounted) {
+      Timer.periodic(Duration(milliseconds: 2000), (timer) async {
+        location.changeSettings(
+            accuracy: LocationAccuracy.HIGH, interval: 1000, distanceFilter: 2);
+        currentLocation = await location.getLocation();
+        setState(() {
+          currentAlt = currentLocation.altitude;
+          currentLat = currentLocation.latitude;
+          currentLng = currentLocation.longitude;
+          currentSpeed = currentLocation.speed;
+          currentHeading = currentLocation.heading;
+          gpsPosition = LatLng(currentLat, currentLng);
 
-    location.changeSettings(
-        accuracy: LocationAccuracy.HIGH, interval: 1000, distanceFilter: 2);
-    currentLocation = await location.getLocation();
-    setState(() {
-      currentAlt = currentLocation.altitude;
-      currentLat = currentLocation.latitude;
-      currentLng = currentLocation.longitude;
-      currentSpeed = currentLocation.speed;
-      currentHeading = currentLocation.heading;
-      gpsPosition = LatLng(currentLat, currentLng);
+          //le setto anche nell app container
+          container.currentLat = currentLat;
+          container.currentLng = currentLng;
+          container.currentAlt = currentAlt;
+          container.currentSpeed = currentSpeed;
+          container.currentHeading = currentHeading;
+        });
 
-      //le setto anche nell app container
-      container.currentLat = currentLat;
-      container.currentLng = currentLng;
-      container.currentAlt = currentAlt;
-      container.currentSpeed = currentSpeed;
-      container.currentHeading = currentHeading;
-    });
-    //mi va subito alla positione aggiornandola se c è
-    _locateMyPosition(currentLat, currentLng, zoomLevel);
-    print(currentLocation.latitude);
-    print(currentLocation.longitude);
-    print(currentLocation.speed);
-    print(currentLocation.altitude);
+        print(currentLocation.latitude);
+        print(currentLocation.longitude);
+        print(currentLocation.speed);
+        print(currentLocation.altitude);
+        print('OGNI 2 SECONDI CERCO LA POSIZIONE======');
+      });
+      //mi va subito alla positione aggiornandola se c è
+      _locateMyPosition(currentLat, currentLng, zoomLevel);
+    }
   }
 
   void _getMyGPSLocationOnMove() {
@@ -532,7 +538,9 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                   layers: [
                     TileLayerOptions(
                       //select map from DB
-                      urlTemplate: container.maps[0].url,
+                      urlTemplate: (container.email == '')
+                          ? "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}@2x.png?apikey=2dc9e186f0cd4fa89025f5bd286c6527"
+                          : container.maps[0].url,
                       subdomains: ['a', 'b', 'c'],
 
                       //la placeholder image purtroppo non può avere le dimensioni di tutto lo schermo
@@ -637,6 +645,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
               ),
         (youHaveTappedOnModal) ? _youHaveTappedOn : Container(),
         (container.batteryOptModal) ? _batteryOptimization : Container(),
+
         AppLifecycleReactor(),
         // Positioned(
         //   top: 100,
@@ -721,32 +730,40 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-        (container.email == '')
-            ? Container()
-            : Positioned(
-                top: 100,
-                right: 20,
-                child: Material(
-                  color: Colors.transparent,
-                  child: Center(
-                    child: Ink(
-                      decoration: const ShapeDecoration(
-                        color: Colors.blueGrey,
-                        shape: CircleBorder(),
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.list),
-                        color: Colors.white,
-                        onPressed: () {
-                          setState(() {
+
+        Positioned(
+          top: 100,
+          right: 20,
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: Ink(
+                decoration: const ShapeDecoration(
+                  color: Colors.blueGrey,
+                  shape: CircleBorder(),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.list),
+                  color: Colors.white,
+                  onPressed: () {
+                    (container.email == '')
+                        ? Fluttertoast.showToast(
+                            msg: "Register to get full access to all maps",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIos: 1,
+                            backgroundColor: Colors.teal,
+                            textColor: Colors.white,
+                            fontSize: 16.0)
+                        : setState(() {
                             container.showMapListPage = true;
                           });
-                        },
-                      ),
-                    ),
-                  ),
+                  },
                 ),
               ),
+            ),
+          ),
+        ),
         Positioned(
           width: 30,
           height: 30,
@@ -798,6 +815,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                         ),
                         color: Colors.white,
                         onPressed: () {
+                          container.resetStopwatch();
                           showDialog(
                               context: context,
                               builder: (BuildContext context) {
@@ -835,6 +853,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                         color: Colors.white,
                         onPressed: () {
                           print('delete');
+                          container.resetStopwatch();
+
                           setState(() {
                             trackPoints = <List>[];
                             trackPointsForDb = <List>[];
@@ -863,7 +883,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                   icon: Icon(Icons.my_location),
                   color: Colors.white,
                   onPressed: () {
-                    _getMyGPSLocationOnInit();
+                    _getMyGPSLocation();
                     // _locateMyPosition(currentLat, currentLng, zoomLevel);
                     _animatedMapMove(LatLng(currentLat, currentLng), zoomLevel);
                     print('locate position');
