@@ -427,7 +427,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     return AlertDialog(
       title: new Text('Please exclude this app from battery optimization'),
       content: new Text(
-        'You have to do that in order to make it run in background',
+        'You have to do that in order to make it run in background. You also always need to activate gps location.',
         style: new TextStyle(fontSize: 30.0),
       ),
       actions: <Widget>[
