@@ -184,7 +184,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   void _getMyGPSLocationOnInit() async {
     final container = AppStateContainer.of(context);
     location.changeSettings(
-        accuracy: LocationAccuracy.HIGH, interval: 2000, distanceFilter: 2);
+        accuracy: LocationAccuracy.HIGH, interval: 2000, distanceFilter: 1);
     currentLocation = await location.getLocation();
     setState(() {
       currentAlt = currentLocation.altitude;
