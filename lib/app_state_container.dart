@@ -206,9 +206,6 @@ class _AppStateContainerState extends State<AppStateContainer> {
   }
 
   void getMap() async {
-    setState(() {
-      loadedMaps = false;
-    });
     print('GETTING=======================');
     Firestore.instance
         .collection("maps")
