@@ -154,6 +154,9 @@ class _AppStateContainerState extends State<AppStateContainer> {
   }
 
   //===========================================
+  void resetStopwatch() {
+    stopwatch.reset();
+  }
 
   void handleRecord() {
     if (stopwatch.isRunning) {
