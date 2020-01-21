@@ -43,13 +43,7 @@ class _TracksPageState extends State<TracksPage> {
   }
 
 //QUESTA FUNZIONE ANDREBBE TOLTA E SOSTITUITA COL GETUSER() DELL APP STATE
-  Future<bool> getUser() async {
-    // Timer.periodic(Duration(seconds: 5), (timer) async {
-    //   FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    //   setState(() {
-    //     email = user.email;
-    //   });
-    // });
+  Future<bool> getTracks() async {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
 
     if (user != null) {
@@ -89,7 +83,7 @@ class _TracksPageState extends State<TracksPage> {
   }
 
   void checkIfAuthenticated() async {
-    await getUser();
+    await getTracks();
     print('USER MAIL----------------------------------: $email');
     if (email == '') {
       setState(() {
