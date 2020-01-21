@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:ZenTrails/models/track_model.dart';
+import 'package:ZenTrails/views/track_details.dart';
+
 import '../main.dart';
 
 import 'auth_screen.dart';
@@ -172,6 +175,16 @@ class _TracksPageState extends State<TracksPage> {
                     return new ListTile(
                       onTap: () {
                         print(document.data['name']);
+                        Track track = Track(
+                          name: document.data['name'].toString(),
+                          description: document.data['description'].toString(),
+                          id: document.data['id'].toString(),
+                          creationDate: document.data['creationDate'],
+                        );
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => TrackDetails(track: track)));
                       },
                       title: new Text(document.data['name'].toString()),
                     );
