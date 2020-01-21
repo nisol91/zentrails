@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../main.dart';
 
 import 'auth_screen.dart';
@@ -39,7 +41,14 @@ class _TracksPageState extends State<TracksPage> {
 
 //QUESTA FUNZIONE ANDREBBE TOLTA E SOSTITUITA COL GETUSER() DELL APP STATE
   Future<bool> getUser() async {
+    // Timer.periodic(Duration(seconds: 5), (timer) async {
+    //   FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    //   setState(() {
+    //     email = user.email;
+    //   });
+    // });
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
+
     if (user != null) {
       email = user.email;
       name = user.displayName;
@@ -89,6 +98,12 @@ class _TracksPageState extends State<TracksPage> {
   }
 
   Widget get _pageToDisplay {
+    var container = AppStateContainer.of(context);
+    if (container.email != '') {
+      return _trackList;
+    } else {
+      return _loading;
+    }
     // if (authenticated == false) {
     //   print('you are not logged in');
     //   return _loading;
@@ -103,7 +118,7 @@ class _TracksPageState extends State<TracksPage> {
     //   }
     // }
     // return _loading;
-    return _trackList;
+    // return _trackList;
   }
 
   Widget get _loading {
@@ -128,37 +143,43 @@ class _TracksPageState extends State<TracksPage> {
   }
 
   Widget get _trackList {
-    return Container(
-      child: StreamBuilder<QuerySnapshot>(
-        stream: Firestore.instance
-            .collection('users')
-            .document(AppStateContainer.of(context).id)
-            .collection('Tracks')
-            .snapshots(),
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              return Center(
-                child: new Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[CircularProgressIndicator()]),
-              );
-            default:
-              return new ListView(
-                children:
-                    snapshot.data.documents.map((DocumentSnapshot document) {
-                  return new ListTile(
-                    onTap: () {
-                      print(document.data['name']);
-                    },
-                    title: new Text(document.data['name'].toString()),
-                  );
-                }).toList(),
-              );
-          }
-        },
+    return Padding(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).size.height * 0.105,
+      ),
+      child: Container(
+        child: StreamBuilder<QuerySnapshot>(
+          stream: Firestore.instance
+              .collection('users')
+              .document(AppStateContainer.of(context).id)
+              .collection('Tracks')
+              .snapshots(),
+          builder:
+              (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
+            switch (snapshot.connectionState) {
+              case ConnectionState.waiting:
+                return Center(
+                  child: new Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[CircularProgressIndicator()]),
+                );
+              default:
+                return new ListView(
+                  children:
+                      snapshot.data.documents.map((DocumentSnapshot document) {
+                    return new ListTile(
+                      onTap: () {
+                        print(document.data['name']);
+                      },
+                      title: new Text(document.data['name'].toString()),
+                    );
+                  }).toList(),
+                );
+            }
+          },
+        ),
       ),
     );
   }
