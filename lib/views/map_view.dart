@@ -558,6 +558,11 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                       }
                     },
                     onTap: (point) {
+                      setState(() {
+                        youHaveTappedOnModal = false;
+                      });
+                    },
+                    onLongPress: (point) {
                       _onMapTapped(point);
                       setState(() {
                         youHaveTappedOnModal = !youHaveTappedOnModal;
