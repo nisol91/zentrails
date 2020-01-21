@@ -48,20 +48,23 @@ class _TracksPageState extends State<TracksPage> {
       new Future.delayed(new Duration(milliseconds: 100), () {
         Firestore.instance
             .collection('users')
-            .where('email', isEqualTo: email)
+            .document(AppStateContainer.of(context).id)
+            .collection('Tracks')
             .getDocuments()
             .then((doc) {
-          print('MAIL FETCH ${doc.documents[0]['email']}');
-          print('NAME FETCH ${doc.documents[0]['fname']}');
-
           if (!mounted) {
             return;
           }
+          doc.documents.forEach((doc) {
+            doc.data.values.forEach((f) {
+              print('TRACK NAME---------$f');
+            });
+            print('TRACCE DELL UTENTE:------>${doc.data}');
+          });
           setState(() {
-            name = doc.documents[0]['fname'];
-            lastname = doc.documents[0]['surname'];
-            email = doc.documents[0]['email'];
-            points = doc.documents[0]['points'].toString();
+            // name = doc.documents[0]['fname'];
+            // lastname = doc.documents[0]['surname'];
+            // email = doc.documents[0]['email'];
             loaded = true;
           });
         });
@@ -75,6 +78,7 @@ class _TracksPageState extends State<TracksPage> {
 
   void checkIfAuthenticated() async {
     await getUser();
+    print('USER MAIL----------------------------------: $email');
     if (email == '') {
       setState(() {
         authenticated = false;
@@ -95,7 +99,7 @@ class _TracksPageState extends State<TracksPage> {
         return _loading;
       } else {
         print('dentro a profile view');
-        return _profileView;
+        return _trackList;
       }
     }
     return _loading;
@@ -122,157 +126,40 @@ class _TracksPageState extends State<TracksPage> {
     );
   }
 
-  Widget get _logOutButton {
-    final container = AppStateContainer.of(context);
-
-    return RaisedButton(
-      onPressed: () => {
-        print(container.firebaseUser),
-        print(container.googleUser),
-        container.signOut().whenComplete(() {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
-          Flushbar(
-            title: "Hey Ninja",
-            message: "Logged Out!!",
-            duration: Duration(seconds: 3),
-            backgroundColor: Theme.of(context).accentColor,
-          )..show(context);
-        }),
-      },
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-          borderRadius: new BorderRadius.circular(10.0),
-          side: BorderSide(color: Colors.grey)),
-      child: new Container(
-        width: 250.0,
-        // width: MediaQuery.of(context).size.width * .5,
-        height: 50.0,
-        alignment: Alignment.center,
-        child: new Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            new Text(
-              'Sign Out',
-              textAlign: TextAlign.center,
-              style: new TextStyle(
-                fontSize: 16.0,
-                color: Colors.teal[900],
-              ),
-            ),
-          ],
-        ),
+  Widget get _trackList {
+    return Container(
+      child: StreamBuilder<QuerySnapshot>(
+        stream: Firestore.instance
+            .collection('users')
+            .document(AppStateContainer.of(context).id)
+            .collection('Tracks')
+            .snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Center(
+                child: new Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[CircularProgressIndicator()]),
+              );
+            default:
+              return new ListView(
+                children:
+                    snapshot.data.documents.map((DocumentSnapshot document) {
+                  return new ListTile(
+                    onTap: () {
+                      print(document.data['name']);
+                    },
+                    title: new Text(document.data['name'].toString()),
+                    // subtitle: new Text(document['description']),
+                  );
+                }).toList(),
+              );
+          }
+        },
       ),
-    );
-  }
-
-  Widget get _profileView {
-    var tema = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 80),
-      child: Container(
-          width: MediaQuery.of(context).size.height * 1,
-          child: (loaded == true)
-              ? Column(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Expanded(
-                      flex: 6,
-                      child: Column(
-                        children: <Widget>[
-                          Image.network(
-                            '${profilePic ?? profilePic}',
-                            height: 70,
-                            loadingBuilder: (BuildContext context, Widget child,
-                                ImageChunkEvent loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Center(
-                                child: LinearProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes !=
-                                          null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes
-                                      : null,
-                                ),
-                              );
-                            },
-                          ),
-                          Text(
-                            name ?? name,
-                            style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 22,
-                                fontStyle: FontStyle.normal),
-                          ),
-                          Text(
-                            lastname ?? lastname,
-                            style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 22,
-                                fontStyle: FontStyle.normal,
-                                color: Colors.grey[500]),
-                          ),
-                          Text(
-                            email ?? email,
-                            style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 22,
-                                fontStyle: FontStyle.normal,
-                                color: Colors.grey[500]),
-                          ),
-                          Text(
-                            'Total points: ${points ?? points}',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 22,
-                                fontStyle: FontStyle.normal,
-                                color: Colors.grey[500]),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Container(
-                          width: 500,
-                          child: Material(
-                            child: InkWell(
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (BuildContext context) {
-                                    return SettingsPage();
-                                  },
-                                ),
-                              ),
-                              child: Center(child: Text('Settings')),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(left: 5.0),
-                            child: _logOutButton,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[CircularProgressIndicator()])),
     );
   }
 

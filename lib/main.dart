@@ -1,4 +1,5 @@
 import 'package:ZenTrails/views/stats_page.dart';
+import 'package:ZenTrails/views/tracks_page.dart';
 import 'package:ZenTrails/widgets/service_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import './views/add_company.dart';
@@ -202,7 +203,8 @@ class _MyHomePageState extends State<MyHomePage>
   final List<Widget> _bottomBarTabs = [
     MapView(),
     StatsPage(),
-    Text('tab'),
+    TracksPage(),
+    // Text('tab'),
     ProfilePage(),
   ];
   Widget changeBottomBarTab(int index) {
