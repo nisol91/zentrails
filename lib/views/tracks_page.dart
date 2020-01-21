@@ -89,20 +89,21 @@ class _TracksPageState extends State<TracksPage> {
   }
 
   Widget get _pageToDisplay {
-    if (authenticated == false) {
-      print('you are not logged in');
-      return AuthScreen();
-    } else if (authenticated == true) {
-      if (loaded == false) {
-        print('..loading');
-        print(loaded);
-        return _loading;
-      } else {
-        print('dentro a profile view');
-        return _trackList;
-      }
-    }
-    return _loading;
+    // if (authenticated == false) {
+    //   print('you are not logged in');
+    //   return _loading;
+    // } else if (authenticated == true) {
+    //   if (loaded == false) {
+    //     print('..loading');
+    //     print(loaded);
+    //     return _loading;
+    //   } else {
+    //     print('dentro a profile view');
+    //     return _trackList;
+    //   }
+    // }
+    // return _loading;
+    return _trackList;
   }
 
   Widget get _loading {
@@ -153,7 +154,6 @@ class _TracksPageState extends State<TracksPage> {
                       print(document.data['name']);
                     },
                     title: new Text(document.data['name'].toString()),
-                    // subtitle: new Text(document['description']),
                   );
                 }).toList(),
               );
