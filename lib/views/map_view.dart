@@ -90,7 +90,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     super.initState();
     animatePositionMarkerDir(0.0, 0.0);
     mapController = MapController();
-    zoomLevel = 8;
+    zoomLevel = 8.5;
     position = LatLng(46.0835, 6.9887);
 
     //dopo che la mappa si è caricata, ricerco la posizione
